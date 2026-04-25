@@ -1,4 +1,3 @@
-from youtube_transcript_api import YouTubeTranscriptApi
 import re
 
 def get_video_id(url: str) -> str:
@@ -15,6 +14,8 @@ def get_video_id(url: str) -> str:
             return match.group(1)
     return None
 
+import youtube_transcript_api
+
 def fetch_youtube_transcript(url: str) -> str:
     """
     Fetches the transcript text for a given YouTube URL.
@@ -24,9 +25,8 @@ def fetch_youtube_transcript(url: str) -> str:
         raise ValueError("Invalid YouTube URL.")
 
     try:
-        # Correct way to call the static method
-        transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
-        # Combine all parts of the transcript into a single string
+        # Using the base module function to be 100% safe
+        transcript_list = youtube_transcript_api.YouTubeTranscriptApi.get_transcript(video_id)
         transcript_text = " ".join([i['text'] for i in transcript_list])
         return transcript_text
     except Exception as e:

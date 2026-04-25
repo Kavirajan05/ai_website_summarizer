@@ -25,31 +25,22 @@ def fetch_youtube_transcript(url: str) -> str:
         raise ValueError("Invalid YouTube URL.")
 
     try:
-        # Diagnostic: What does Python see?
-        import youtube_transcript_api
-        members = dir(youtube_transcript_api)
+        from youtube_transcript_api import YouTubeTranscriptApi
         
-        # Method 1: The standard way
+        # Method: List all transcripts then pick one
+        transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+        
+        # Try to find English, then fall back to any available
         try:
-            from youtube_transcript_api import YouTubeTranscriptApi
-            return " ".join([i['text'] for i in YouTubeTranscriptApi.get_transcript(video_id)])
-        except (ImportError, AttributeError):
-            pass
-            
-        # Method 2: The module way
-        func = getattr(youtube_transcript_api, 'get_transcript', None)
-        if not func:
-            # Method 3: The class-via-module way
-            cls = getattr(youtube_transcript_api, 'YouTubeTranscriptApi', None)
-            func = getattr(cls, 'get_transcript', None)
-            
-        if not func:
-            raise Exception(f"Library members found: {members}. No 'get_transcript' found.")
-            
-        transcript_list = func(video_id)
-        return " ".join([i['text'] for i in transcript_list])
+            transcript = transcript_list.find_transcript(['en'])
+        except:
+            # If English is not found, take the first one available
+            transcript = next(iter(transcript_list))
+
+        data = transcript.fetch()
+        return " ".join([i['text'] for i in data])
 
     except Exception as e:
-        raise Exception(f"YouTube Library Error: {str(e)}")
+        raise Exception(f"YouTube Transcript Tool Error: {str(e)}")
     except Exception as e:
         raise Exception(f"Could not fetch transcript: {str(e)}")

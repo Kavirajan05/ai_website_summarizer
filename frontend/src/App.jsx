@@ -26,11 +26,11 @@ function App() {
     if (activeTab === 'website') {
       endpoint = 'summarize-website'
       headers = { 'Content-Type': 'application/json' }
-      body = JSON.stringify({ url, email: userEmail.trim() || 'user@example.com' })
+      body = JSON.stringify({ url })
     } else if (activeTab === 'youtube') {
       endpoint = 'summarize-youtube'
       headers = { 'Content-Type': 'application/json' }
-      body = JSON.stringify({ url, email: userEmail.trim() || 'user@example.com' })
+      body = JSON.stringify({ url })
     } else if (activeTab === 'services') {
       endpoint = 'find-services'
       headers = { 'Content-Type': 'application/json' }
@@ -175,16 +175,16 @@ function App() {
           </>
         )}
 
-        {activeTab !== 'document' && (
+        {activeTab === 'services' && (
           <div className="input-group">
-            <label htmlFor="email">Your Email {activeTab === 'services' ? '(optional)' : '(for results)'}</label>
+            <label htmlFor="email">Your Email (optional)</label>
             <input
               id="email"
               type="email"
               placeholder="your@email.com"
               value={userEmail}
               onChange={(e) => setUserEmail(e.target.value)}
-              required={activeTab !== 'services' && activeTab !== 'document'}
+              required={false}
             />
           </div>
         )}

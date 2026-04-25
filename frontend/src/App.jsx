@@ -3,6 +3,7 @@ import './App.css'
 
 function App() {
   const [url, setUrl] = useState('')
+  const [activeTab, setActiveTab] = useState('website') // 'website' or 'youtube'
   const [loading, setLoading] = useState(false)
   const [reportData, setReportData] = useState(null)
   const [status, setStatus] = useState(null)
@@ -13,13 +14,11 @@ function App() {
     setStatus(null)
     setReportData(null)
 
-    let apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001'
-    
-    // Safety Fix: Remove trailing slash if present
-    apiUrl = apiUrl.replace(/\/$/, '')
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001'
+    const endpoint = activeTab === 'website' ? 'summarize-website' : 'summarize-youtube'
 
     try {
-      const response = await fetch(`${apiUrl}/summarize-website`, {
+      const response = await fetch(`${apiUrl}/${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -52,16 +51,33 @@ function App() {
     <div className="app-container">
       <div className="header">
         <h1>AI Summarizer</h1>
-        <p>Instant expert summaries from any URL.</p>
+        <p>Instant expert summaries from any {activeTab === 'website' ? 'URL' : 'YouTube Video'}.</p>
+      </div>
+
+      <div className="tabs">
+        <button 
+          className={`tab-btn ${activeTab === 'website' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('website'); setReportData(null); setUrl(''); }}
+        >
+          🌐 Website
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'youtube' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('youtube'); setReportData(null); setUrl(''); }}
+        >
+          🎬 YouTube
+        </button>
       </div>
 
       <form onSubmit={handleSubmit}>
         <div className="input-group">
-          <label htmlFor="url">Website URL</label>
+          <label htmlFor="url">
+            {activeTab === 'website' ? 'Website URL' : 'YouTube Video URL'}
+          </label>
           <input
             id="url"
             type="url"
-            placeholder="https://example.com"
+            placeholder={activeTab === 'website' ? "https://example.com" : "https://youtube.com/watch?v=..."}
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             required
@@ -72,10 +88,10 @@ function App() {
           {loading ? (
             <>
               <div className="loader"></div>
-              Analyzing Content...
+              {activeTab === 'website' ? 'Analyzing Content...' : 'Transcribing Video...'}
             </>
           ) : (
-            'Generate Summary'
+            `Summarize ${activeTab === 'website' ? 'Website' : 'Video'}`
           )}
         </button>
       </form>
@@ -93,7 +109,7 @@ function App() {
           </div>
           
           <div className="report-section">
-            <h3>Summary</h3>
+            <h3>{activeTab === 'website' ? 'Summary' : 'Video Summary'}</h3>
             <p>{reportData.summary}</p>
           </div>
 

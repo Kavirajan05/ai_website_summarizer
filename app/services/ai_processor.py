@@ -37,21 +37,43 @@ def process_with_ai(scraped_text: str) -> dict:
     {scraped_text}
     """
 
-    model = genai.GenerativeModel('gemini-flash-latest')
-    
-    # We can use generation_config to ensure JSON output
-    generation_config = genai.types.GenerationConfig(
-        response_mime_type="application/json"
-    )
+    # Using gemini-1.5-flash for better performance
+    model = genai.GenerativeModel('gemini-1.5-flash')
     
     response = model.generate_content(
         prompt,
-        generation_config=generation_config
+        generation_config=main_generation_config()
     )
     
+    raw_text = response.text.strip()
+    
+    # Robust JSON extraction
     try:
-        # Load the text as JSON
-        result = json.loads(response.text)
-        return result
+        # 1. Try direct parse
+        return json.loads(raw_text)
     except json.JSONDecodeError:
-        raise Exception("LLM did not return a valid JSON format.")
+        try:
+            # 2. Try cleaning markdown markers if present
+            clean_text = raw_text
+            if "```" in raw_text:
+                clean_text = raw_text.split("```")[1]
+                if clean_text.startswith("json"):
+                    clean_text = clean_text[4:]
+            return json.loads(clean_text)
+        except Exception:
+            # 3. Last resort: just try to find the first { and last }
+            try:
+                start = raw_text.find('{')
+                end = raw_text.rfind('}') + 1
+                if start != -1 and end != 0:
+                    return json.loads(raw_text[start:end])
+                else:
+                    raise Exception("No JSON object found in response.")
+            except Exception:
+                raise Exception(f"AI returned invalid format. Raw: {raw_text[:100]}...")
+
+def main_generation_config():
+    return genai.types.GenerationConfig(
+        response_mime_type="application/json",
+        temperature=0.2,
+    )

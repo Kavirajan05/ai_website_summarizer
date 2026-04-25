@@ -24,6 +24,7 @@ def fetch_youtube_transcript(url: str) -> str:
         raise ValueError("Invalid YouTube URL.")
 
     try:
+        # Correct way to call the static method
         transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
         # Combine all parts of the transcript into a single string
         transcript_text = " ".join([i['text'] for i in transcript_list])

@@ -25,22 +25,51 @@ def fetch_youtube_transcript(url: str) -> str:
         raise ValueError("Invalid YouTube URL.")
 
     try:
-        from youtube_transcript_api import YouTubeTranscriptApi
+        import youtube_transcript_api as yta
         
-        # Method: List all transcripts then pick one
-        transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+        # Aggressive Search: Try to find the function anywhere in the library
+        target_func = None
         
-        # Try to find English, then fall back to any available
-        try:
-            transcript = transcript_list.find_transcript(['en'])
-        except:
-            # If English is not found, take the first one available
-            transcript = next(iter(transcript_list))
+        # Choice 1: Check the class
+        if hasattr(yta, 'YouTubeTranscriptApi'):
+            cls = yta.YouTubeTranscriptApi
+            for name in ['get_transcript', 'list_transcripts']:
+                if hasattr(cls, name):
+                    target_func = getattr(cls, name)
+                    break
+        
+        # Choice 2: Check the module directly
+        if not target_func:
+            for name in ['get_transcript', 'list_transcripts']:
+                if hasattr(yta, name):
+                    target_func = getattr(yta, name)
+                    break
 
-        data = transcript.fetch()
-        return " ".join([i['text'] for i in data])
+        if not target_func:
+            # Final attempt: direct import from the inner module
+            try:
+                from youtube_transcript_api._transcripts import YouTubeTranscriptApi as DirectClass
+                target_func = DirectClass.get_transcript
+            except:
+                raise Exception(f"Fatal: Could not find YouTube function in library members: {dir(yta)}")
+
+        # Execute
+        result = target_func(video_id)
+        
+        # Parse result (it could be a list or a Transcripts object)
+        if hasattr(result, 'find_transcript'):
+            # It's a Transcripts object (from list_transcripts)
+            try:
+                final_data = result.find_transcript(['en']).fetch()
+            except:
+                final_data = next(iter(result)).fetch()
+        else:
+            # It's a list (from get_transcript)
+            final_data = result
+
+        return " ".join([i['text'] for i in final_data])
 
     except Exception as e:
-        raise Exception(f"YouTube Transcript Tool Error: {str(e)}")
+        raise Exception(f"YouTube Nuclear Fix Error: {str(e)}")
     except Exception as e:
         raise Exception(f"Could not fetch transcript: {str(e)}")

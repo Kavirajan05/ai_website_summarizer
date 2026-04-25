@@ -37,13 +37,20 @@ def process_with_ai(scraped_text: str) -> dict:
     {scraped_text}
     """
 
-    # Using gemini-1.5-flash for better performance
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    
-    response = model.generate_content(
-        prompt,
-        generation_config=main_generation_config()
-    )
+    # Using gemini-1.5-flash-latest for better compatibility
+    try:
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        response = model.generate_content(
+            prompt,
+            generation_config=main_generation_config()
+        )
+    except Exception as e:
+        if "404" in str(e):
+            # Fallback to gemini-pro if Flash is not found
+            model = genai.GenerativeModel('gemini-pro')
+            response = model.generate_content(prompt)
+        else:
+            raise e
     
     raw_text = response.text.strip()
     

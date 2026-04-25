@@ -13,7 +13,10 @@ function App() {
     setStatus(null)
     setReportData(null)
 
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001'
+    let apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001'
+    
+    // Safety Fix: Remove trailing slash if present
+    apiUrl = apiUrl.replace(/\/$/, '')
 
     try {
       const response = await fetch(`${apiUrl}/summarize-website`, {
@@ -21,7 +24,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url, email: 'user@example.com' }), // Email is ignored by backend now
+        body: JSON.stringify({ url, email: 'user@example.com' }),
       })
 
       const result = await response.json()

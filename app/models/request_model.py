@@ -3,7 +3,7 @@ from typing import List, Optional
 
 class SummarizeRequest(BaseModel):
     url: HttpUrl
-    email: Optional[EmailStr] = None
+    email: EmailStr
 
 class SummaryReport(BaseModel):
     title: str

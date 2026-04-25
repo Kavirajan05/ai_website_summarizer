@@ -3,11 +3,12 @@ import './App.css'
 
 function App() {
   const [url, setUrl] = useState('')
+  const [topic, setTopic] = useState('')
   const [service, setService] = useState('')
   const [city, setCity] = useState('')
   const [userEmail, setUserEmail] = useState('')
   const [docFile, setDocFile] = useState(null)
-  const [activeTab, setActiveTab] = useState('website') // 'website', 'youtube', 'services', or 'document'
+  const [activeTab, setActiveTab] = useState('website') // 'website', 'youtube', 'document', 'yt-report', or 'services'
   const [loading, setLoading] = useState(false)
   const [reportData, setReportData] = useState(null)
   const [status, setStatus] = useState(null)
@@ -26,11 +27,11 @@ function App() {
     if (activeTab === 'website') {
       endpoint = 'summarize-website'
       headers = { 'Content-Type': 'application/json' }
-      body = JSON.stringify({ url })
+      body = JSON.stringify({ url, email: userEmail.trim() || 'user@example.com' })
     } else if (activeTab === 'youtube') {
       endpoint = 'summarize-youtube'
       headers = { 'Content-Type': 'application/json' }
-      body = JSON.stringify({ url })
+      body = JSON.stringify({ url, email: userEmail.trim() || 'user@example.com' })
     } else if (activeTab === 'services') {
       endpoint = 'find-services'
       headers = { 'Content-Type': 'application/json' }
@@ -44,7 +45,10 @@ function App() {
       const formData = new FormData()
       formData.append('file', docFile)
       body = formData
-      // Note: Don't set Content-Type header for FormData, browser does it with boundary
+    } else if (activeTab === 'yt-report') {
+      endpoint = 'youtube-report'
+      headers = { 'Content-Type': 'application/json' }
+      body = JSON.stringify({ topic })
     }
 
     try {
@@ -61,7 +65,8 @@ function App() {
         setStatus({
           type: 'success',
           message: activeTab === 'services' ? 'Services found and analyzed!' : 
-                   activeTab === 'document' ? 'Document summarized successfully!' : 'Summary generated successfully!',
+                   activeTab === 'document' ? 'Document summarized successfully!' : 
+                   activeTab === 'yt-report' ? 'YouTube report generated!' : 'Summary generated successfully!',
         })
       } else {
         const errorMessage = result.detail 
@@ -83,6 +88,7 @@ function App() {
     if (activeTab === 'website') return 'Instant expert summaries from any URL.'
     if (activeTab === 'youtube') return 'Instant expert summaries from any YouTube Video.'
     if (activeTab === 'document') return 'Instant expert summaries from any PDF Document.'
+    if (activeTab === 'yt-report') return 'Generate learning reports from YouTube topics.'
     return 'Find and analyze the best local service providers.'
   }
 
@@ -111,6 +117,12 @@ function App() {
           onClick={() => { setActiveTab('document'); setReportData(null); setStatus(null); }}
         >
           📄 Document
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'yt-report' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('yt-report'); setReportData(null); setStatus(null); }}
+        >
+          🎥 YT Report
         </button>
         <button 
           className={`tab-btn ${activeTab === 'services' ? 'active' : ''}`}
@@ -148,6 +160,18 @@ function App() {
               />
             </div>
           </div>
+        ) : activeTab === 'yt-report' ? (
+          <div className="input-group">
+            <label htmlFor="topic">Learning Topic</label>
+            <input
+              id="topic"
+              type="text"
+              placeholder="e.g. Quantum Physics, React Hooks"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              required
+            />
+          </div>
         ) : (
           <>
             <div className="input-group">
@@ -175,16 +199,16 @@ function App() {
           </>
         )}
 
-        {activeTab === 'services' && (
+        {activeTab !== 'document' && activeTab !== 'yt-report' && (
           <div className="input-group">
-            <label htmlFor="email">Your Email (optional)</label>
+            <label htmlFor="email">Your Email {activeTab === 'services' ? '(optional)' : '(for results)'}</label>
             <input
               id="email"
               type="email"
               placeholder="your@email.com"
               value={userEmail}
               onChange={(e) => setUserEmail(e.target.value)}
-              required={false}
+              required={activeTab !== 'services'}
             />
           </div>
         )}
@@ -195,12 +219,14 @@ function App() {
               <div className="loader"></div>
               {activeTab === 'website' ? 'Analyzing Content...' : 
                activeTab === 'youtube' ? 'Transcribing Video...' : 
-               activeTab === 'document' ? 'Processing PDF...' : 'Searching Services...'}
+               activeTab === 'document' ? 'Processing PDF...' : 
+               activeTab === 'yt-report' ? 'Generating Report...' : 'Searching Services...'}
             </>
           ) : (
             activeTab === 'website' ? 'Summarize Website' : 
             activeTab === 'youtube' ? 'Summarize Video' : 
-            activeTab === 'document' ? 'Summarize Document' : 'Find Best Services'
+            activeTab === 'document' ? 'Summarize Document' : 
+            activeTab === 'yt-report' ? 'Generate YT Report' : 'Find Best Services'
           )}
         </button>
       </form>
@@ -211,7 +237,38 @@ function App() {
         </div>
       )}
 
-      {reportData && activeTab !== 'services' && (
+      {reportData && activeTab === 'yt-report' && (
+        <div className="report-view">
+          <div className="report-header">
+            <h2>AI Learning Report: {reportData.topic}</h2>
+          </div>
+          
+          <div className="report-section">
+            <h3>Ranked Recommendations</h3>
+            <div className="recommendations-list">
+              {reportData.ai_analysis.map((item, i) => (
+                <div key={i} className="rec-item">
+                  <div className="rec-main">
+                    <h4>#{item.rank} {item.title}</h4>
+                    <span className="tag">{item.channel}</span>
+                  </div>
+                  <p className="reasoning">{item.explanation}</p>
+                  <div className="rec-links">
+                    <a href={item.url} target="_blank" rel="noreferrer">🎬 Watch Video</a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="report-section">
+            <h3>Final Report Preview</h3>
+            <pre className="report-preview-text">{reportData.final_report}</pre>
+          </div>
+        </div>
+      )}
+
+      {reportData && activeTab !== 'services' && activeTab !== 'yt-report' && (
         <div className="report-view">
           <div className="report-header">
             <h2>{reportData.title}</h2>

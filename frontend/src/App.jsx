@@ -8,7 +8,8 @@ function App() {
   const [city, setCity] = useState('')
   const [userEmail, setUserEmail] = useState('')
   const [docFile, setDocFile] = useState(null)
-  const [activeTab, setActiveTab] = useState('website') // 'website', 'youtube', 'document', 'yt-report', or 'services'
+  const [resumeFile, setResumeFile] = useState(null)
+  const [activeTab, setActiveTab] = useState('website') // 'website', 'youtube', 'document', 'yt-report', 'services', or 'resume'
   const [loading, setLoading] = useState(false)
   const [reportData, setReportData] = useState(null)
   const [status, setStatus] = useState(null)
@@ -49,6 +50,11 @@ function App() {
       endpoint = 'youtube-report'
       headers = { 'Content-Type': 'application/json' }
       body = JSON.stringify({ topic })
+    } else if (activeTab === 'resume') {
+      endpoint = 'analyze-resume'
+      const formData = new FormData()
+      formData.append('file', resumeFile)
+      body = formData
     }
 
     try {
@@ -66,7 +72,8 @@ function App() {
           type: 'success',
           message: activeTab === 'services' ? 'Services found and analyzed!' : 
                    activeTab === 'document' ? 'Document summarized successfully!' : 
-                   activeTab === 'yt-report' ? 'YouTube report generated!' : 'Summary generated successfully!',
+                   activeTab === 'yt-report' ? 'YouTube report generated!' : 
+                   activeTab === 'resume' ? 'Resume analyzed successfully!' : 'Summary generated successfully!',
         })
       } else {
         const errorMessage = result.detail 
@@ -89,6 +96,7 @@ function App() {
     if (activeTab === 'youtube') return 'Instant expert summaries from any YouTube Video.'
     if (activeTab === 'document') return 'Instant expert summaries from any PDF Document.'
     if (activeTab === 'yt-report') return 'Generate learning reports from YouTube topics.'
+    if (activeTab === 'resume') return 'AI-powered ATS scoring and resume analysis.'
     return 'Find and analyze the best local service providers.'
   }
 
@@ -129,6 +137,12 @@ function App() {
           onClick={() => { setActiveTab('services'); setReportData(null); setStatus(null); }}
         >
           📍 Services
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'resume' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('resume'); setReportData(null); setStatus(null); }}
+        >
+          💼 Resume
         </button>
       </div>
 
@@ -172,6 +186,19 @@ function App() {
               required
             />
           </div>
+        ) : activeTab === 'resume' ? (
+          <div className="input-group">
+            <label htmlFor="resumeFile">Upload Resume (PDF/DOCX)</label>
+            <div className="file-upload-wrapper">
+              <input
+                id="resumeFile"
+                type="file"
+                accept=".pdf,application/pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={(e) => setResumeFile(e.target.files[0])}
+                required
+              />
+            </div>
+          </div>
         ) : (
           <>
             <div className="input-group">
@@ -199,7 +226,7 @@ function App() {
           </>
         )}
 
-        {activeTab !== 'document' && activeTab !== 'yt-report' && (
+        {activeTab !== 'document' && activeTab !== 'yt-report' && activeTab !== 'resume' && (
           <div className="input-group">
             <label htmlFor="email">Your Email {activeTab === 'services' ? '(optional)' : '(for results)'}</label>
             <input
@@ -220,13 +247,15 @@ function App() {
               {activeTab === 'website' ? 'Analyzing Content...' : 
                activeTab === 'youtube' ? 'Transcribing Video...' : 
                activeTab === 'document' ? 'Processing PDF...' : 
-               activeTab === 'yt-report' ? 'Generating Report...' : 'Searching Services...'}
+               activeTab === 'yt-report' ? 'Generating Report...' : 
+               activeTab === 'resume' ? 'Analyzing Resume...' : 'Searching Services...'}
             </>
           ) : (
             activeTab === 'website' ? 'Summarize Website' : 
             activeTab === 'youtube' ? 'Summarize Video' : 
             activeTab === 'document' ? 'Summarize Document' : 
-            activeTab === 'yt-report' ? 'Generate YT Report' : 'Find Best Services'
+            activeTab === 'yt-report' ? 'Generate YT Report' : 
+            activeTab === 'resume' ? 'Analyze Resume' : 'Find Best Services'
           )}
         </button>
       </form>
@@ -268,7 +297,7 @@ function App() {
         </div>
       )}
 
-      {reportData && activeTab !== 'services' && activeTab !== 'yt-report' && (
+      {reportData && activeTab !== 'services' && activeTab !== 'yt-report' && activeTab !== 'resume' && (
         <div className="report-view">
           <div className="report-header">
             <h2>{reportData.title}</h2>
@@ -359,6 +388,56 @@ function App() {
             <div className="tags">
               {reportData.insights && reportData.insights.map((insight, i) => <span key={i} className="tag insight-tag">{insight}</span>)}
             </div>
+          </div>
+        </div>
+      )}
+
+      {reportData && activeTab === 'resume' && (
+        <div className="report-view">
+          <div className="report-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <h2 style={{ marginBottom: 0 }}>Resume Analysis: {reportData.name}</h2>
+            <div className="ats-score-badge">
+              <span className="score-label">ATS Score</span>
+              <span className={`score-value ${reportData.ats_score >= 80 ? 'high' : reportData.ats_score >= 60 ? 'medium' : 'low'}`}>
+                {reportData.ats_score}/100
+              </span>
+            </div>
+          </div>
+          
+          <div className="report-section highlight">
+            <h3>Candidate Summary</h3>
+            <p><strong>Email:</strong> {reportData.email}</p>
+            <p><strong>Education:</strong> {reportData.education}</p>
+            <p><strong>Experience:</strong> {reportData.experience}</p>
+          </div>
+
+          <div className="report-grid">
+            <div className="report-card">
+              <h3>Verified Skills</h3>
+              <div className="tags">
+                {reportData.skills && reportData.skills.map((skill, i) => (
+                  <span key={i} className="tag">{skill}</span>
+                ))}
+              </div>
+            </div>
+            
+            <div className="report-card">
+              <h3>Missing Keywords (ATS)</h3>
+              <div className="tags">
+                {reportData.missing_skills && reportData.missing_skills.map((skill, i) => (
+                  <span key={i} className="tag error-tag">{skill}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="report-section">
+            <h3>Improvement Suggestions</h3>
+            <ul className="suggestions-list">
+              {reportData.suggestions && reportData.suggestions.map((suggestion, i) => (
+                <li key={i}>{suggestion}</li>
+              ))}
+            </ul>
           </div>
         </div>
       )}

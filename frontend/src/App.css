@@ -365,3 +365,47 @@ form {
   border: 1px solid var(--glass-border);
   line-height: 1.5;
 }
+
+/* Resume Analyzer Styles */
+.ats-score-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+}
+
+.score-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
+}
+
+.score-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.score-value.high { color: #10b981; }
+.score-value.medium { color: #f59e0b; }
+.score-value.low { color: #ef4444; }
+
+.error-tag {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.suggestions-list {
+  padding-left: 1.5rem;
+  color: #cbd5e1;
+}
+
+.suggestions-list li {
+  margin-bottom: 0.8rem;
+  line-height: 1.5;
+}

@@ -25,25 +25,31 @@ def fetch_youtube_transcript(url: str) -> str:
         raise ValueError("Invalid YouTube URL.")
 
     try:
-        # Extra safe way to call the transcript function
+        # Diagnostic: What does Python see?
+        import youtube_transcript_api
+        members = dir(youtube_transcript_api)
+        
+        # Method 1: The standard way
         try:
             from youtube_transcript_api import YouTubeTranscriptApi
-            transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
-        except AttributeError:
-            # Fallback for different library versions
-            import youtube_transcript_api
-            func = getattr(youtube_transcript_api, 'get_transcript', None)
-            if not func:
-                # Last resort: search inside the class
-                cls = getattr(youtube_transcript_api, 'YouTubeTranscriptApi', None)
-                func = getattr(cls, 'get_transcript', None)
+            return " ".join([i['text'] for i in YouTubeTranscriptApi.get_transcript(video_id)])
+        except (ImportError, AttributeError):
+            pass
             
-            if not func:
-                raise Exception("Could not find 'get_transcript' in the library.")
-                
-            transcript_list = func(video_id)
+        # Method 2: The module way
+        func = getattr(youtube_transcript_api, 'get_transcript', None)
+        if not func:
+            # Method 3: The class-via-module way
+            cls = getattr(youtube_transcript_api, 'YouTubeTranscriptApi', None)
+            func = getattr(cls, 'get_transcript', None)
+            
+        if not func:
+            raise Exception(f"Library members found: {members}. No 'get_transcript' found.")
+            
+        transcript_list = func(video_id)
+        return " ".join([i['text'] for i in transcript_list])
 
-        transcript_text = " ".join([i['text'] for i in transcript_list])
-        return transcript_text
+    except Exception as e:
+        raise Exception(f"YouTube Library Error: {str(e)}")
     except Exception as e:
         raise Exception(f"Could not fetch transcript: {str(e)}")

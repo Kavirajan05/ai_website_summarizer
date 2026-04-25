@@ -44,7 +44,19 @@ async def summarize_document_with_ai(text: str) -> dict:
     """
 
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # Auto-discover models to avoid 404 Errors
+        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        
+        # Pick the best model
+        model_name = "gemini-1.5-flash" # Default
+        if "models/gemini-1.5-flash" in available_models:
+            model_name = "models/gemini-1.5-flash"
+        elif any("flash" in m for m in available_models):
+            model_name = next(m for m in available_models if "flash" in m)
+        elif available_models:
+            model_name = available_models[0]
+
+        model = genai.GenerativeModel(model_name)
         response = model.generate_content(
             prompt,
             generation_config={"response_mime_type": "application/json"}

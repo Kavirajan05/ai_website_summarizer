@@ -15,9 +15,6 @@ async def analyze_services_with_ai(service: str, city: str, formatted_places: li
             "insights": []
         }
         
-    # Using the latest stable model string
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    
     prompt = f"""
 Analyze the following list of local {service} providers in {city} fetched from Google Local data.
 
@@ -60,6 +57,19 @@ Data:
 """
 
     try:
+        # Auto-discover models to avoid 404 Errors
+        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        
+        # Pick the best model
+        model_name = "gemini-1.5-flash" # Default
+        if "models/gemini-1.5-flash" in available_models:
+            model_name = "models/gemini-1.5-flash"
+        elif any("flash" in m for m in available_models):
+            model_name = next(m for m in available_models if "flash" in m)
+        elif available_models:
+            model_name = available_models[0]
+
+        model = genai.GenerativeModel(model_name)
         response = model.generate_content(prompt)
         text = response.text.strip()
         

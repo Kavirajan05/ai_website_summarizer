@@ -9,7 +9,8 @@ function App() {
   const [userEmail, setUserEmail] = useState('')
   const [docFile, setDocFile] = useState(null)
   const [resumeFile, setResumeFile] = useState(null)
-  const [activeTab, setActiveTab] = useState('website') // 'website', 'youtube', 'document', 'yt-report', 'services', or 'resume'
+  const [query, setQuery] = useState('')
+  const [activeTab, setActiveTab] = useState('website') // 'website', 'youtube', 'document', 'yt-report', 'services', 'resume', or 'multimodel'
   const [loading, setLoading] = useState(false)
   const [reportData, setReportData] = useState(null)
   const [status, setStatus] = useState(null)
@@ -55,6 +56,10 @@ function App() {
       const formData = new FormData()
       formData.append('file', resumeFile)
       body = formData
+    } else if (activeTab === 'multimodel') {
+      endpoint = 'multimodel-summarize'
+      headers = { 'Content-Type': 'application/json' }
+      body = JSON.stringify({ query })
     }
 
     try {
@@ -73,7 +78,8 @@ function App() {
           message: activeTab === 'services' ? 'Services found and analyzed!' : 
                    activeTab === 'document' ? 'Document summarized successfully!' : 
                    activeTab === 'yt-report' ? 'YouTube report generated!' : 
-                   activeTab === 'resume' ? 'Resume analyzed successfully!' : 'Summary generated successfully!',
+                   activeTab === 'resume' ? 'Resume analyzed successfully!' : 
+                   activeTab === 'multimodel' ? 'Multi-model summary generated!' : 'Summary generated successfully!',
         })
       } else {
         const errorMessage = result.detail 
@@ -97,6 +103,7 @@ function App() {
     if (activeTab === 'document') return 'Instant expert summaries from any PDF Document.'
     if (activeTab === 'yt-report') return 'Generate learning reports from YouTube topics.'
     if (activeTab === 'resume') return 'AI-powered ATS scoring and resume analysis.'
+    if (activeTab === 'multimodel') return 'Query multiple LLMs (Qwen, LLaMA, Gemini) simultaneously.'
     return 'Find and analyze the best local service providers.'
   }
 
@@ -143,6 +150,12 @@ function App() {
           onClick={() => { setActiveTab('resume'); setReportData(null); setStatus(null); }}
         >
           💼 Resume
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'multimodel' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('multimodel'); setReportData(null); setStatus(null); }}
+        >
+          🤖 Multi-Model
         </button>
       </div>
 
@@ -199,6 +212,19 @@ function App() {
               />
             </div>
           </div>
+        ) : activeTab === 'multimodel' ? (
+          <div className="input-group">
+            <label htmlFor="query">Ask Multiple AIs</label>
+            <textarea
+              id="query"
+              placeholder="e.g. Compare React and Vue, or explain quantum physics..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              required
+              rows={4}
+              style={{ width: '100%', background: 'rgba(0, 0, 0, 0.2)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '0.8rem 1rem', color: 'white', fontSize: '1rem', outline: 'none', resize: 'vertical' }}
+            />
+          </div>
         ) : (
           <>
             <div className="input-group">
@@ -226,7 +252,7 @@ function App() {
           </>
         )}
 
-        {activeTab !== 'document' && activeTab !== 'yt-report' && activeTab !== 'resume' && (
+        {activeTab !== 'document' && activeTab !== 'yt-report' && activeTab !== 'resume' && activeTab !== 'multimodel' && (
           <div className="input-group">
             <label htmlFor="email">Your Email {activeTab === 'services' ? '(optional)' : '(for results)'}</label>
             <input
@@ -248,14 +274,16 @@ function App() {
                activeTab === 'youtube' ? 'Transcribing Video...' : 
                activeTab === 'document' ? 'Processing PDF...' : 
                activeTab === 'yt-report' ? 'Generating Report...' : 
-               activeTab === 'resume' ? 'Analyzing Resume...' : 'Searching Services...'}
+               activeTab === 'resume' ? 'Analyzing Resume...' : 
+               activeTab === 'multimodel' ? 'Querying Models...' : 'Searching Services...'}
             </>
           ) : (
             activeTab === 'website' ? 'Summarize Website' : 
             activeTab === 'youtube' ? 'Summarize Video' : 
             activeTab === 'document' ? 'Summarize Document' : 
             activeTab === 'yt-report' ? 'Generate YT Report' : 
-            activeTab === 'resume' ? 'Analyze Resume' : 'Find Best Services'
+            activeTab === 'resume' ? 'Analyze Resume' : 
+            activeTab === 'multimodel' ? 'Ask Multimodel AI' : 'Find Best Services'
           )}
         </button>
       </form>
@@ -297,7 +325,7 @@ function App() {
         </div>
       )}
 
-      {reportData && activeTab !== 'services' && activeTab !== 'yt-report' && activeTab !== 'resume' && (
+      {reportData && activeTab !== 'services' && activeTab !== 'yt-report' && activeTab !== 'resume' && activeTab !== 'multimodel' && (
         <div className="report-view">
           <div className="report-header">
             <h2>{reportData.title}</h2>
@@ -438,6 +466,60 @@ function App() {
                 <li key={i}>{suggestion}</li>
               ))}
             </ul>
+          </div>
+        </div>
+      )}
+
+      {reportData && activeTab === 'multimodel' && reportData.final_summary && (
+        <div className="report-view">
+          <div className="report-header">
+            <h2>{reportData.final_summary.title}</h2>
+          </div>
+          
+          <div className="report-section highlight">
+            <h3>Overview</h3>
+            <p>{reportData.final_summary.overview}</p>
+          </div>
+
+          <div className="report-grid">
+            <div className="report-card">
+              <h3>Key Points</h3>
+              <ul className="suggestions-list">
+                {reportData.final_summary.key_points && reportData.final_summary.key_points.map((point, i) => (
+                  <li key={i}>{point}</li>
+                ))}
+              </ul>
+            </div>
+            
+            <div className="report-card">
+              <h3>Model Latency</h3>
+              <ul className="suggestions-list">
+                <li><strong>Qwen:</strong> {reportData.meta?.latency?.openrouter_qwen || 'N/A'}</li>
+                <li><strong>LLaMA:</strong> {reportData.meta?.latency?.groq_llama || 'N/A'}</li>
+                <li><strong>Gemini:</strong> {reportData.meta?.latency?.gemini || 'N/A'}</li>
+                <li><strong>Total Time:</strong> {reportData.meta?.latency?.total || 'N/A'}</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="report-grid">
+             <div className="report-card">
+              <h3>Strengths</h3>
+              <ul className="suggestions-list">
+                {reportData.final_summary.strengths && reportData.final_summary.strengths.map((s, i) => <li key={i}>{s}</li>)}
+              </ul>
+             </div>
+             <div className="report-card">
+              <h3>Challenges / Weaknesses</h3>
+              <ul className="suggestions-list">
+                {reportData.final_summary.challenges && reportData.final_summary.challenges.map((c, i) => <li key={i}>{c}</li>)}
+              </ul>
+             </div>
+          </div>
+
+          <div className="report-section">
+            <h3>Conclusion</h3>
+            <p>{reportData.final_summary.conclusion}</p>
           </div>
         </div>
       )}

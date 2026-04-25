@@ -1,0 +1,503 @@
+2026-03-30 14:38:46 | INFO     | utils.logger:setup_logger:34 — Logger initialized.
+2026-03-30 14:38:46 | INFO     | main:lifespan:41 — 🚀 Multi-Model AI Summarization API starting up
+2026-03-30 14:40:01 | INFO     | main:summarize:155 — [POST /summarize] query='what is meant by apple ?' email=jijeshrajkai@gmail.com
+2026-03-30 14:40:01 | INFO     | main:run_summarization_pipeline:103 — [Pipeline] Starting for query='what is meant by apple ?' → jijeshrajkai@gmail.com
+2026-03-30 14:40:01 | INFO     | services.llm:call_openrouter:61 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 14:40:01 | INFO     | services.llm:call_groq:91 — [Groq] Sending request | model=llama-3.3-70b-versatile
+2026-03-30 14:40:01 | INFO     | services.llm:_sync_call:111 — [Gemini] Sending request | model=gemini-1.5-flash
+2026-03-30 14:40:02 | INFO     | services.llm:call_groq:97 — [Groq] Response received (1347 chars)
+2026-03-30 14:40:02 | ERROR    | services.llm:gather_llm_responses:142 — [OPENROUTER] Failed: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-03-30 14:40:02 | ERROR    | services.llm:gather_llm_responses:142 — [GEMINI] Failed: 404 models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2026-03-30 14:40:02 | INFO     | main:run_summarization_pipeline:110 — [Pipeline] Merged 1872 chars from 3 providers
+2026-03-30 14:40:02 | INFO     | services.summarizer:summarize_combined:50 — [Summarizer] Requesting final summary from OpenRouter
+2026-03-30 14:40:02 | INFO     | services.llm:call_openrouter:61 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 14:40:03 | ERROR    | main:run_summarization_pipeline:128 — [Pipeline] Failed for jijeshrajkai@gmail.com: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+Traceback (most recent call last):
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+           │         │     └ {'__name__': '__main__', '__doc__': None, '__package__': '', '__loader__': <zipimporter object "C:\Users\E.kavirajan\AppData\...
+           │         └ <code object <module> at 0x0000015833384BE0, file "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\Scripts\uvico...
+           └ <function _run_code at 0x00000158333625F0>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+         │     └ {'__name__': '__main__', '__doc__': None, '__package__': '', '__loader__': <zipimporter object "C:\Users\E.kavirajan\AppData\...
+         └ <code object <module> at 0x0000015833384BE0, file "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\Scripts\uvico...
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\Scripts\uvicorn.exe\__main__.py", line 6, in <module>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\click\core.py", line 1161, in __call__
+    return self.main(*args, **kwargs)
+           │    │     │       └ {}
+           │    │     └ ()
+           │    └ <function BaseCommand.main at 0x00000158352A5870>
+           └ <Command main>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\click\core.py", line 1082, in main
+    rv = self.invoke(ctx)
+         │    │      └ <click.core.Context object at 0x0000015832EE8D00>
+         │    └ <function Command.invoke at 0x00000158352A6320>
+         └ <Command main>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\click\core.py", line 1443, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           │   │      │    │           │   └ {'app': 'main:app', 'host': '127.0.0.1', 'port': 8000, 'uds': None, 'fd': None, 'reload': False, 'reload_dirs': (), 'reload_i...
+           │   │      │    │           └ <click.core.Context object at 0x0000015832EE8D00>
+           │   │      │    └ <function main at 0x00000158358FBC70>
+           │   │      └ <Command main>
+           │   └ <function Context.invoke at 0x00000158352A5090>
+           └ <click.core.Context object at 0x0000015832EE8D00>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\click\core.py", line 788, in invoke
+    return __callback(*args, **kwargs)
+                       │       └ {'app': 'main:app', 'host': '127.0.0.1', 'port': 8000, 'uds': None, 'fd': None, 'reload': False, 'reload_dirs': (), 'reload_i...
+                       └ ()
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\uvicorn\main.py", line 412, in main
+    run(
+    └ <function run at 0x00000158357CE710>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\uvicorn\main.py", line 579, in run
+    server.run()
+    │      └ <function Server.run at 0x00000158357CE050>
+    └ <uvicorn.server.Server object at 0x00000158358DF940>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\uvicorn\server.py", line 65, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           │       │   │    │             └ None
+           │       │   │    └ <function Server.serve at 0x00000158357CE0E0>
+           │       │   └ <uvicorn.server.Server object at 0x00000158358DF940>
+           │       └ <function run at 0x00000158333636D0>
+           └ <module 'asyncio' from 'C:\\Users\\E.kavirajan\\AppData\\Local\\Programs\\Python\\Python310\\lib\\asyncio\\__init__.py'>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\asyncio\runners.py", line 44, in run
+    return loop.run_until_complete(main)
+           │    │                  └ <coroutine object Server.serve at 0x00000158358B61F0>
+           │    └ <function BaseEventLoop.run_until_complete at 0x00000158350256C0>
+           └ <ProactorEventLoop running=True closed=False debug=False>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\asyncio\base_events.py", line 636, in run_until_complete
+    self.run_forever()
+    │    └ <function ProactorEventLoop.run_forever at 0x00000158350D5E10>
+    └ <ProactorEventLoop running=True closed=False debug=False>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\asyncio\windows_events.py", line 321, in run_forever
+    super().run_forever()
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\asyncio\base_events.py", line 603, in run_forever
+    self._run_once()
+    │    └ <function BaseEventLoop._run_once at 0x0000015835027130>
+    └ <ProactorEventLoop running=True closed=False debug=False>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\asyncio\base_events.py", line 1909, in _run_once
+    handle._run()
+    │      └ <function Handle._run at 0x00000158339B9EA0>
+    └ <Handle <TaskStepMethWrapper object at 0x000001583B8C3100>()>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\asyncio\events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+    │    │            │    │           │    └ <member '_args' of 'Handle' objects>
+    │    │            │    │           └ <Handle <TaskStepMethWrapper object at 0x000001583B8C3100>()>
+    │    │            │    └ <member '_callback' of 'Handle' objects>
+    │    │            └ <Handle <TaskStepMethWrapper object at 0x000001583B8C3100>()>
+    │    └ <member '_context' of 'Handle' objects>
+    └ <Handle <TaskStepMethWrapper object at 0x000001583B8C3100>()>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+                   └ <uvicorn.middleware.proxy_headers.ProxyHeadersMiddleware object at 0x00000158358DFF40>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+                 │    │   │      │        └ <bound method RequestResponseCycle.send of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x000001583A...
+                 │    │   │      └ <bound method RequestResponseCycle.receive of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x0000015...
+                 │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+                 │    └ <fastapi.applications.FastAPI object at 0x000001583A4FFBB0>
+                 └ <uvicorn.middleware.proxy_headers.ProxyHeadersMiddleware object at 0x00000158358DFF40>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+                           │      │        └ <bound method RequestResponseCycle.send of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x000001583A...
+                           │      └ <bound method RequestResponseCycle.receive of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x0000015...
+                           └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+          │    │                │      │        └ <bound method RequestResponseCycle.send of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x000001583A...
+          │    │                │      └ <bound method RequestResponseCycle.receive of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x0000015...
+          │    │                └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <starlette.middleware.errors.ServerErrorMiddleware object at 0x000001583A538730>
+          └ <fastapi.applications.FastAPI object at 0x000001583A4FFBB0>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+          │    │   │      │        └ <function ServerErrorMiddleware.__call__.<locals>._send at 0x000001583A5270A0>
+          │    │   │      └ <bound method RequestResponseCycle.receive of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x0000015...
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <starlette.middleware.cors.CORSMiddleware object at 0x000001583A538280>
+          └ <starlette.middleware.errors.ServerErrorMiddleware object at 0x000001583A538730>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+          │    │               │      │        │                     └ Headers({'host': '127.0.0.1:8000', 'connection': 'keep-alive', 'content-length': '79', 'sec-ch-ua-platform': '"Windows"', 'us...
+          │    │               │      │        └ <function ServerErrorMiddleware.__call__.<locals>._send at 0x000001583A5270A0>
+          │    │               │      └ <bound method RequestResponseCycle.receive of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x0000015...
+          │    │               └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <function CORSMiddleware.simple_response at 0x0000015837AE5B40>
+          └ <starlette.middleware.cors.CORSMiddleware object at 0x000001583A538280>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+          │    │   │      │        └ functools.partial(<bound method CORSMiddleware.send of <starlette.middleware.cors.CORSMiddleware object at 0x000001583A538280...
+          │    │   │      └ <bound method RequestResponseCycle.receive of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x0000015...
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <starlette.middleware.exceptions.ExceptionMiddleware object at 0x000001583A5380D0>
+          └ <starlette.middleware.cors.CORSMiddleware object at 0x000001583A538280>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+          │                            │    │    │     │      │        └ functools.partial(<bound method CORSMiddleware.send of <starlette.middleware.cors.CORSMiddleware object at 0x000001583A538280...
+          │                            │    │    │     │      └ <bound method RequestResponseCycle.receive of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x0000015...
+          │                            │    │    │     └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │                            │    │    └ <starlette.requests.Request object at 0x000001583A53B910>
+          │                            │    └ <fastapi.routing.APIRouter object at 0x000001583A4FFCD0>
+          │                            └ <starlette.middleware.exceptions.ExceptionMiddleware object at 0x000001583A5380D0>
+          └ <function wrap_app_handling_exceptions at 0x0000015837A83490>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+          │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001583A526D40>
+          │   │      └ <bound method RequestResponseCycle.receive of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x0000015...
+          │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          └ <fastapi.routing.APIRouter object at 0x000001583A4FFCD0>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+          │    │                │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001583A526D40>
+          │    │                │      └ <bound method RequestResponseCycle.receive of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x0000015...
+          │    │                └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <bound method Router.app of <fastapi.routing.APIRouter object at 0x000001583A4FFCD0>>
+          └ <fastapi.routing.APIRouter object at 0x000001583A4FFCD0>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+          │     │      │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001583A526D40>
+          │     │      │      └ <bound method RequestResponseCycle.receive of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x0000015...
+          │     │      └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │     └ <function Route.handle at 0x0000015837AA4A60>
+          └ APIRoute(path='/summarize', name='summarize', methods=['POST'])
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+          │    │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001583A526D40>
+          │    │   │      └ <bound method RequestResponseCycle.receive of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x0000015...
+          │    │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │    └ <function request_response.<locals>.app at 0x0000015836831A20>
+          └ APIRoute(path='/summarize', name='summarize', methods=['POST'])
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+          │                            │    │        │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001583A526D40>
+          │                            │    │        │      └ <bound method RequestResponseCycle.receive of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x0000015...
+          │                            │    │        └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          │                            │    └ <starlette.requests.Request object at 0x000001583A53BA00>
+          │                            └ <function request_response.<locals>.app.<locals>.app at 0x000001583A526CB0>
+          └ <function wrap_app_handling_exceptions at 0x0000015837A83490>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+          │   │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001583A5269E0>
+          │   │      └ <bound method RequestResponseCycle.receive of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x0000015...
+          │   └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          └ <function request_response.<locals>.app.<locals>.app at 0x000001583A526CB0>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 74, in app
+    await response(scope, receive, send)
+          │        │      │        └ <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x000001583A5269E0>
+          │        │      └ <bound method RequestResponseCycle.receive of <uvicorn.protocols.http.httptools_impl.RequestResponseCycle object at 0x0000015...
+          │        └ {'type': 'http', 'asgi': {'version': '3.0', 'spec_version': '2.3'}, 'http_version': '1.1', 'server': ('127.0.0.1', 8000), 'cl...
+          └ <starlette.responses.JSONResponse object at 0x000001583A4FF940>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\responses.py", line 158, in __call__
+    await self.background()
+          │    └ <fastapi.background.BackgroundTasks object at 0x000001583A53BD60>
+          └ <starlette.responses.JSONResponse object at 0x000001583A4FF940>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\background.py", line 41, in __call__
+    await task()
+          └ <starlette.background.BackgroundTask object at 0x000001583A4FFA60>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\background.py", line 26, in __call__
+    await self.func(*self.args, **self.kwargs)
+          │    │     │    │       │    └ {}
+          │    │     │    │       └ <starlette.background.BackgroundTask object at 0x000001583A4FFA60>
+          │    │     │    └ ('what is meant by apple ?', 'jijeshrajkai@gmail.com')
+          │    │     └ <starlette.background.BackgroundTask object at 0x000001583A4FFA60>
+          │    └ <function run_summarization_pipeline at 0x000001583A527520>
+          └ <starlette.background.BackgroundTask object at 0x000001583A4FFA60>
+
+> File "C:\Users\E.kavirajan\Desktop\Multimodel_AI\main.py", line 113, in run_summarization_pipeline
+    summary = await summarize_combined(combined)
+                    │                  └ 'Response from OpenRouter (Qwen):\n[Error from openrouter: Client error \'429 Too Many Requests\' for url \'https://openroute...
+                    └ <function summarize_combined at 0x000001583A4DF880>
+
+  File "C:\Users\E.kavirajan\Desktop\Multimodel_AI\services\summarizer.py", line 52, in summarize_combined
+    summary = await call_openrouter(prompt, model=SUMMARIZER_MODEL)
+                    │               │             └ 'qwen/qwen3-coder:free'
+                    │               └ 'You are a professional technical writer. Based on the following combined AI responses, create a well-structured, professiona...
+                    └ <function call_openrouter at 0x000001583A4DF1C0>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\tenacity\asyncio\__init__.py", line 189, in async_wrapped
+    return await copy(fn, *args, **kwargs)
+                 │    │    │       └ {'model': 'qwen/qwen3-coder:free'}
+                 │    │    └ ('You are a professional technical writer. Based on the following combined AI responses, create a well-structured, profession...
+                 │    └ <function call_openrouter at 0x000001583A4DF010>
+                 └ <AsyncRetrying object at 0x1583a4ff8b0 (stop=<tenacity.stop.stop_after_attempt object at 0x00000158381FD8D0>, wait=<tenacity....
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\tenacity\asyncio\__init__.py", line 111, in __call__
+    do = await self.iter(retry_state=retry_state)
+               │    │                └ <RetryCallState 1478447069696: attempt #1; slept for 0.0; last result: failed (HTTPStatusError Client error '429 Too Many Req...
+               │    └ <function AsyncRetrying.iter at 0x000001583A4A5240>
+               └ <AsyncRetrying object at 0x1583a4ff8b0 (stop=<tenacity.stop.stop_after_attempt object at 0x00000158381FD8D0>, wait=<tenacity....
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\tenacity\asyncio\__init__.py", line 153, in iter
+    result = await action(retry_state)
+                   │      └ <RetryCallState 1478447069696: attempt #1; slept for 0.0; last result: failed (HTTPStatusError Client error '429 Too Many Req...
+                   └ <function wrap_to_async_func.<locals>.inner at 0x000001583B853BE0>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\tenacity\_utils.py", line 99, in inner
+    return call(*args, **kwargs)
+           │     │       └ {}
+           │     └ (<RetryCallState 1478447069696: attempt #1; slept for 0.0; last result: failed (HTTPStatusError Client error '429 Too Many Re...
+           └ <function BaseRetrying._post_retry_check_actions.<locals>.<lambda> at 0x000001583B853B50>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\tenacity\__init__.py", line 398, in <lambda>
+    self._add_action_func(lambda rs: rs.outcome.result())
+                                 │   │  │       └ <function Future.result at 0x000001583349D090>
+                                 │   │  └ <Future at 0x1583a53a500 state=finished raised HTTPStatusError>
+                                 │   └ <RetryCallState 1478447069696: attempt #1; slept for 0.0; last result: failed (HTTPStatusError Client error '429 Too Many Req...
+                                 └ <RetryCallState 1478447069696: attempt #1; slept for 0.0; last result: failed (HTTPStatusError Client error '429 Too Many Req...
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\concurrent\futures\_base.py", line 451, in result
+    return self.__get_result()
+           └ None
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\concurrent\futures\_base.py", line 403, in __get_result
+    raise self._exception
+          └ None
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\tenacity\asyncio\__init__.py", line 114, in __call__
+    result = await fn(*args, **kwargs)
+                   │   │       └ {'model': 'qwen/qwen3-coder:free'}
+                   │   └ ('You are a professional technical writer. Based on the following combined AI responses, create a well-structured, profession...
+                   └ <function call_openrouter at 0x000001583A4DF010>
+
+  File "C:\Users\E.kavirajan\Desktop\Multimodel_AI\services\llm.py", line 63, in call_openrouter
+    response.raise_for_status()
+    │        └ <function Response.raise_for_status at 0x0000015837F29900>
+    └ <Response [429 Too Many Requests]>
+
+  File "C:\Users\E.kavirajan\AppData\Local\Programs\Python\Python310\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+          │               │                │                 └ <Response [429 Too Many Requests]>
+          │               │                └ <Request('POST', 'https://openrouter.ai/api/v1/chat/completions')>
+          │               └ "Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: ht...
+          └ <class 'httpx.HTTPStatusError'>
+
+httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-03-30 14:44:14 | INFO     | main:lifespan:43 — 🛑 API shutting down
+2026-03-30 14:44:20 | INFO     | utils.logger:setup_logger:34 — Logger initialized.
+2026-03-30 14:44:20 | INFO     | main:lifespan:41 — 🚀 Multi-Model AI Summarization API starting up
+2026-03-30 14:45:33 | INFO     | main:summarize:155 — [POST /summarize] query='what is meant by apple?' email=jijeshrajkai@gmail.com
+2026-03-30 14:45:33 | INFO     | main:run_summarization_pipeline:103 — [Pipeline] Starting for query='what is meant by apple?' → jijeshrajkai@gmail.com
+2026-03-30 14:45:33 | INFO     | services.llm:call_openrouter:78 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 14:45:33 | INFO     | services.llm:call_groq:108 — [Groq] Sending request | model=llama-3.3-70b-versatile
+2026-03-30 14:45:33 | INFO     | services.llm:_sync_call:128 — [Gemini] Sending request | model=gemini-1.5-flash
+2026-03-30 14:45:34 | INFO     | services.llm:call_groq:114 — [Groq] Response received (1315 chars)
+2026-03-30 14:45:37 | INFO     | services.llm:call_openrouter:78 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 14:45:42 | INFO     | services.llm:call_openrouter:78 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 14:45:52 | INFO     | services.llm:call_openrouter:78 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 14:45:53 | ERROR    | services.llm:gather_llm_responses:159 — [OPENROUTER] Failed: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-03-30 14:45:53 | ERROR    | services.llm:gather_llm_responses:159 — [GEMINI] Failed: 404 models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2026-03-30 14:45:53 | INFO     | main:run_summarization_pipeline:110 — [Pipeline] Merged 1840 chars from 3 providers
+2026-03-30 14:45:53 | INFO     | services.summarizer:summarize_combined:60 — [Summarizer] Trying OpenRouter as primary summarizer
+2026-03-30 14:45:53 | INFO     | services.llm:call_openrouter:78 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 14:45:57 | INFO     | services.llm:call_openrouter:78 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 14:46:01 | INFO     | services.llm:call_openrouter:78 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 14:46:14 | INFO     | services.llm:call_openrouter:78 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 14:46:15 | WARNING  | services.summarizer:summarize_combined:67 — [Summarizer] OpenRouter returned 429 after retries — switching to Groq fallback
+2026-03-30 14:46:15 | INFO     | services.summarizer:summarize_combined:78 — [Summarizer] Using Groq (LLaMA 3.3 70B) as fallback summarizer
+2026-03-30 14:46:15 | INFO     | services.llm:call_groq:108 — [Groq] Sending request | model=llama-3.3-70b-versatile
+2026-03-30 14:46:17 | INFO     | services.llm:call_groq:114 — [Groq] Response received (2353 chars)
+2026-03-30 14:46:17 | INFO     | services.summarizer:summarize_combined:80 — [Summarizer] Groq summary generated (2353 chars)
+2026-03-30 14:46:17 | INFO     | services.email:send_html_email:44 — [Email] Sending to 'jijeshrajkai@gmail.com' | subject='🤖 AI Summary Report'
+2026-03-30 14:46:21 | INFO     | services.email:send_html_email:55 — [Email] Successfully delivered to 'jijeshrajkai@gmail.com'
+2026-03-30 14:46:21 | INFO     | main:run_summarization_pipeline:125 — [Pipeline] Completed successfully → jijeshrajkai@gmail.com
+2026-03-30 14:46:21 | INFO     | main:lifespan:43 — 🛑 API shutting down
+2026-03-30 14:47:26 | INFO     | utils.logger:setup_logger:34 — Logger initialized.
+2026-03-30 14:47:26 | INFO     | main:lifespan:41 — 🚀 Multi-Model AI Summarization API starting up
+2026-03-30 15:03:19 | INFO     | utils.logger:setup_logger:34 — Logger initialized.
+2026-03-30 15:03:21 | INFO     | utils.logger:setup_logger:34 — Logger initialized.
+2026-03-30 15:03:21 | INFO     | utils.logger:setup_logger:34 — Logger initialized.
+2026-03-30 15:03:21 | INFO     | main:lifespan:43 — 🚀 Multi-Model AI Summarization API v2 starting up
+2026-03-30 15:03:38 | INFO     | utils.logger:setup_logger:34 — Logger initialized.
+2026-03-30 15:03:38 | INFO     | main:lifespan:43 — 🚀 Multi-Model AI Summarization API v2 starting up
+2026-03-30 15:03:38 | INFO     | main:lifespan:45 — 🛑 API shutting down
+2026-03-30 15:06:07 | INFO     | main:summarize:180 — [POST /summarize] query='explain about blackhole' email=jijeshrajkai@gmail.com send_email=False
+2026-03-30 15:06:07 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:06:07 | INFO     | services.llm:call_groq:109 — [Groq] Sending request | model=llama-3.3-70b-versatile
+2026-03-30 15:06:07 | INFO     | services.llm:_sync_call:128 — [Gemini] Sending request | model=gemini-1.5-flash
+2026-03-30 15:06:07 | ERROR    | services.llm:_timed:150 — [gemini] Failed after 0.24s: 404 models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2026-03-30 15:06:08 | INFO     | services.llm:call_groq:115 — [Groq] Response received (3439 chars)
+2026-03-30 15:06:08 | INFO     | services.llm:_timed:153 — [groq_llama] Completed in 1.52s
+2026-03-30 15:06:11 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:06:16 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:06:25 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:06:26 | ERROR    | services.llm:_timed:150 — [openrouter_qwen] Failed after 18.84s: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-03-30 15:06:26 | INFO     | services.summarizer:summarize_combined:91 — [Summarizer] Trying OpenRouter as primary summarizer
+2026-03-30 15:06:26 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:06:29 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:06:34 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:06:43 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:06:44 | WARNING  | services.summarizer:summarize_combined:96 — [Summarizer] OpenRouter 429 — switching to Groq fallback
+2026-03-30 15:06:44 | INFO     | services.summarizer:summarize_combined:105 — [Summarizer] Using Groq (LLaMA 3.3 70B) as fallback
+2026-03-30 15:06:44 | INFO     | services.llm:call_groq:109 — [Groq] Sending request | model=llama-3.3-70b-versatile
+2026-03-30 15:06:45 | INFO     | services.llm:call_groq:115 — [Groq] Response received (1608 chars)
+2026-03-30 15:06:45 | INFO     | services.summarizer:summarize_combined:107 — [Summarizer] Groq raw response (1608 chars)
+2026-03-30 15:09:20 | INFO     | utils.logger:setup_logger:34 — Logger initialized.
+2026-03-30 15:09:20 | INFO     | main:lifespan:43 — 🚀 Multi-Model AI Summarization API v2 starting up
+2026-03-30 15:09:59 | INFO     | main:summarize:180 — [POST /summarize] query='what is an apple' email=jijeshrajkai@gmail.com send_email=False
+2026-03-30 15:09:59 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:09:59 | INFO     | services.llm:call_groq:109 — [Groq] Sending request | model=llama-3.3-70b-versatile
+2026-03-30 15:09:59 | INFO     | services.llm:_sync_call:128 — [Gemini] Sending request | model=gemini-1.5-flash
+2026-03-30 15:09:59 | ERROR    | services.llm:_timed:150 — [gemini] Failed after 0.25s: 404 models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2026-03-30 15:09:59 | INFO     | services.llm:call_groq:115 — [Groq] Response received (1387 chars)
+2026-03-30 15:09:59 | INFO     | services.llm:_timed:153 — [groq_llama] Completed in 0.91s
+2026-03-30 15:10:03 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:10:08 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:10:17 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:10:17 | ERROR    | services.llm:_timed:150 — [openrouter_qwen] Failed after 18.84s: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-03-30 15:10:17 | INFO     | services.summarizer:summarize_combined:91 — [Summarizer] Trying OpenRouter as primary summarizer
+2026-03-30 15:10:17 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:10:21 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:10:26 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:10:34 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:10:35 | WARNING  | services.summarizer:summarize_combined:96 — [Summarizer] OpenRouter 429 — switching to Groq fallback
+2026-03-30 15:10:35 | INFO     | services.summarizer:summarize_combined:105 — [Summarizer] Using Groq (LLaMA 3.3 70B) as fallback
+2026-03-30 15:10:35 | INFO     | services.llm:call_groq:109 — [Groq] Sending request | model=llama-3.3-70b-versatile
+2026-03-30 15:10:36 | INFO     | services.llm:call_groq:115 — [Groq] Response received (1155 chars)
+2026-03-30 15:10:36 | INFO     | services.summarizer:summarize_combined:107 — [Summarizer] Groq raw response (1155 chars)
+2026-03-30 15:17:57 | INFO     | main:summarize:180 — [POST /summarize] query='what is an orange?' email=jijeshrajkai@gmail.com send_email=True
+2026-03-30 15:17:57 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:17:57 | INFO     | services.llm:call_groq:109 — [Groq] Sending request | model=llama-3.3-70b-versatile
+2026-03-30 15:17:57 | INFO     | services.llm:_sync_call:128 — [Gemini] Sending request | model=gemini-1.5-flash
+2026-03-30 15:17:58 | ERROR    | services.llm:_timed:150 — [gemini] Failed after 0.26s: 404 models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2026-03-30 15:17:59 | INFO     | services.llm:call_groq:115 — [Groq] Response received (1314 chars)
+2026-03-30 15:17:59 | INFO     | services.llm:_timed:153 — [groq_llama] Completed in 1.23s
+2026-03-30 15:18:01 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:18:06 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:18:15 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:18:15 | ERROR    | services.llm:_timed:150 — [openrouter_qwen] Failed after 18.17s: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-03-30 15:18:15 | INFO     | services.summarizer:summarize_combined:91 — [Summarizer] Trying OpenRouter as primary summarizer
+2026-03-30 15:18:16 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:18:19 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:18:24 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:18:33 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:18:34 | WARNING  | services.summarizer:summarize_combined:96 — [Summarizer] OpenRouter 429 — switching to Groq fallback
+2026-03-30 15:18:34 | INFO     | services.summarizer:summarize_combined:105 — [Summarizer] Using Groq (LLaMA 3.3 70B) as fallback
+2026-03-30 15:18:34 | INFO     | services.llm:call_groq:109 — [Groq] Sending request | model=llama-3.3-70b-versatile
+2026-03-30 15:18:35 | INFO     | services.llm:call_groq:115 — [Groq] Response received (1425 chars)
+2026-03-30 15:18:35 | INFO     | services.summarizer:summarize_combined:107 — [Summarizer] Groq raw response (1425 chars)
+2026-03-30 15:18:35 | INFO     | main:summarize:210 — [/summarize] Email queued for jijeshrajkai@gmail.com
+2026-03-30 15:18:35 | INFO     | services.email:send_html_email:44 — [Email] Sending to 'jijeshrajkai@gmail.com' | subject='🤖 AI Summary Report'
+2026-03-30 15:18:39 | INFO     | services.email:send_html_email:55 — [Email] Successfully delivered to 'jijeshrajkai@gmail.com'
+2026-03-30 15:21:43 | INFO     | main:summarize:180 — [POST /summarize] query='explain blackhole' email=jijeshrajkai@gmail.com send_email=True
+2026-03-30 15:21:43 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:21:43 | INFO     | services.llm:call_groq:109 — [Groq] Sending request | model=llama-3.3-70b-versatile
+2026-03-30 15:21:43 | INFO     | services.llm:_sync_call:128 — [Gemini] Sending request | model=gemini-1.5-flash
+2026-03-30 15:21:44 | ERROR    | services.llm:_timed:150 — [gemini] Failed after 0.30s: 404 models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2026-03-30 15:21:45 | INFO     | services.llm:call_groq:115 — [Groq] Response received (3632 chars)
+2026-03-30 15:21:45 | INFO     | services.llm:_timed:153 — [groq_llama] Completed in 1.52s
+2026-03-30 15:21:47 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:21:52 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:22:01 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:22:01 | ERROR    | services.llm:_timed:150 — [openrouter_qwen] Failed after 18.17s: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-03-30 15:22:01 | INFO     | services.summarizer:summarize_combined:91 — [Summarizer] Trying OpenRouter as primary summarizer
+2026-03-30 15:22:02 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:22:05 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:22:10 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:22:19 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-03-30 15:22:19 | WARNING  | services.summarizer:summarize_combined:96 — [Summarizer] OpenRouter 429 — switching to Groq fallback
+2026-03-30 15:22:19 | INFO     | services.summarizer:summarize_combined:105 — [Summarizer] Using Groq (LLaMA 3.3 70B) as fallback
+2026-03-30 15:22:19 | INFO     | services.llm:call_groq:109 — [Groq] Sending request | model=llama-3.3-70b-versatile
+2026-03-30 15:22:20 | INFO     | services.llm:call_groq:115 — [Groq] Response received (1542 chars)
+2026-03-30 15:22:20 | INFO     | services.summarizer:summarize_combined:107 — [Summarizer] Groq raw response (1542 chars)
+2026-03-30 15:22:20 | INFO     | main:summarize:210 — [/summarize] Email queued for jijeshrajkai@gmail.com
+2026-03-30 15:22:20 | INFO     | services.email:send_html_email:44 — [Email] Sending to 'jijeshrajkai@gmail.com' | subject='🤖 AI Summary Report'
+2026-03-30 15:22:25 | INFO     | services.email:send_html_email:55 — [Email] Successfully delivered to 'jijeshrajkai@gmail.com'
+2026-03-30 23:43:21 | INFO     | utils.logger:setup_logger:34 — Logger initialized.
+2026-03-30 23:43:21 | INFO     | main:lifespan:43 — 🚀 Multi-Model AI Summarization API v2 starting up
+2026-04-02 11:14:09 | INFO     | utils.logger:setup_logger:34 — Logger initialized.
+2026-04-02 11:14:09 | INFO     | main:lifespan:43 — 🚀 Multi-Model AI Summarization API v2 starting up
+2026-04-02 11:15:09 | INFO     | main:summarize:180 — [POST /summarize] query='what is AI Agent' email=kavirajanekadesi@gmail.com send_email=True
+2026-04-02 11:15:09 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:15:09 | INFO     | services.llm:call_groq:109 — [Groq] Sending request | model=llama-3.3-70b-versatile
+2026-04-02 11:15:09 | INFO     | services.llm:_sync_call:128 — [Gemini] Sending request | model=gemini-1.5-flash
+2026-04-02 11:15:09 | ERROR    | services.llm:_timed:150 — [gemini] Failed after 0.23s: 404 models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2026-04-02 11:15:11 | INFO     | services.llm:call_groq:115 — [Groq] Response received (3299 chars)
+2026-04-02 11:15:11 | INFO     | services.llm:_timed:153 — [groq_llama] Completed in 2.34s
+2026-04-02 11:15:13 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:15:18 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:15:27 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:15:28 | ERROR    | services.llm:_timed:150 — [openrouter_qwen] Failed after 19.26s: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-04-02 11:15:28 | INFO     | services.summarizer:summarize_combined:91 — [Summarizer] Trying OpenRouter as primary summarizer
+2026-04-02 11:15:28 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:15:31 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:15:36 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:15:45 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:15:46 | WARNING  | services.summarizer:summarize_combined:96 — [Summarizer] OpenRouter 429 — switching to Groq fallback
+2026-04-02 11:15:46 | INFO     | services.summarizer:summarize_combined:105 — [Summarizer] Using Groq (LLaMA 3.3 70B) as fallback
+2026-04-02 11:15:46 | INFO     | services.llm:call_groq:109 — [Groq] Sending request | model=llama-3.3-70b-versatile
+2026-04-02 11:15:47 | INFO     | services.llm:call_groq:115 — [Groq] Response received (1487 chars)
+2026-04-02 11:15:47 | INFO     | services.summarizer:summarize_combined:107 — [Summarizer] Groq raw response (1487 chars)
+2026-04-02 11:15:47 | INFO     | main:summarize:210 — [/summarize] Email queued for kavirajanekadesi@gmail.com
+2026-04-02 11:15:47 | INFO     | services.email:send_html_email:44 — [Email] Sending to 'kavirajanekadesi@gmail.com' | subject='🤖 AI Summary Report'
+2026-04-02 11:15:52 | INFO     | services.email:send_html_email:55 — [Email] Successfully delivered to 'kavirajanekadesi@gmail.com'
+2026-04-02 11:20:00 | INFO     | main:lifespan:45 — 🛑 API shutting down
+2026-04-02 11:20:37 | INFO     | utils.logger:setup_logger:34 — Logger initialized.
+2026-04-02 11:20:37 | INFO     | main:lifespan:43 — 🚀 Multi-Model AI Summarization API v2 starting up
+2026-04-02 11:21:22 | INFO     | main:summarize:180 — [POST /summarize] query='what is automation flow' email=iniyarajan01@gmail.com send_email=True
+2026-04-02 11:21:22 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:21:22 | INFO     | services.llm:call_groq:109 — [Groq] Sending request | model=llama-3.3-70b-versatile
+2026-04-02 11:21:22 | INFO     | services.llm:_sync_call:128 — [Gemini] Sending request | model=gemini-1.5-flash
+2026-04-02 11:21:22 | ERROR    | services.llm:_timed:150 — [gemini] Failed after 0.34s: 404 models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2026-04-02 11:21:24 | INFO     | services.llm:call_groq:115 — [Groq] Response received (2821 chars)
+2026-04-02 11:21:24 | INFO     | services.llm:_timed:153 — [groq_llama] Completed in 2.44s
+2026-04-02 11:21:26 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:21:31 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:21:39 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:21:40 | ERROR    | services.llm:_timed:150 — [openrouter_qwen] Failed after 18.52s: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-04-02 11:21:40 | INFO     | services.summarizer:summarize_combined:91 — [Summarizer] Trying OpenRouter as primary summarizer
+2026-04-02 11:21:40 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:22:43 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:22:48 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:22:57 | INFO     | services.llm:call_openrouter:80 — [OpenRouter] Sending request | model=qwen/qwen3-coder:free
+2026-04-02 11:22:58 | WARNING  | services.summarizer:summarize_combined:96 — [Summarizer] OpenRouter 429 — switching to Groq fallback
+2026-04-02 11:22:58 | INFO     | services.summarizer:summarize_combined:105 — [Summarizer] Using Groq (LLaMA 3.3 70B) as fallback
+2026-04-02 11:22:58 | INFO     | services.llm:call_groq:109 — [Groq] Sending request | model=llama-3.3-70b-versatile
+2026-04-02 11:22:59 | INFO     | services.llm:call_groq:115 — [Groq] Response received (1829 chars)
+2026-04-02 11:22:59 | INFO     | services.summarizer:summarize_combined:107 — [Summarizer] Groq raw response (1829 chars)
+2026-04-02 11:22:59 | INFO     | main:summarize:210 — [/summarize] Email queued for iniyarajan01@gmail.com
+2026-04-02 11:22:59 | INFO     | services.email:send_html_email:44 — [Email] Sending to 'iniyarajan01@gmail.com' | subject='🤖 AI Summary Report'
+2026-04-02 11:23:04 | INFO     | services.email:send_html_email:55 — [Email] Successfully delivered to 'iniyarajan01@gmail.com'

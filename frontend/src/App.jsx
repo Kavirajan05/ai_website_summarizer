@@ -219,7 +219,6 @@ function App() {
           {reportData.best_choice && reportData.best_choice.name && (
             <div className="report-section highlight">
               <h3>🏆 Best Choice: {reportData.best_choice.name}</h3>
-              <p><strong>Trust Score:</strong> {reportData.best_choice.trust_score}/100</p>
               <p>{reportData.best_choice.reasoning}</p>
             </div>
           )}

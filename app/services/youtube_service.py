@@ -27,47 +27,43 @@ def fetch_youtube_transcript(url: str) -> str:
     try:
         import youtube_transcript_api as yta
         
-        # Aggressive Search: Try to find the function anywhere in the library
-        target_func = None
-        
-        # Choice 1: Check the class
-        if hasattr(yta, 'YouTubeTranscriptApi'):
-            cls = yta.YouTubeTranscriptApi
-            for name in ['get_transcript', 'list_transcripts']:
-                if hasattr(cls, name):
-                    target_func = getattr(cls, name)
-                    break
-        
-        # Choice 2: Check the module directly
-        if not target_func:
-            for name in ['get_transcript', 'list_transcripts']:
-                if hasattr(yta, name):
-                    target_func = getattr(yta, name)
-                    break
+        # Deep Scan Logic
+        def find_method(obj):
+            for name in dir(obj):
+                if 'transcript' in name.lower() and ('get' in name.lower() or 'list' in name.lower()):
+                    return getattr(obj, name)
+            return None
 
-        if not target_func:
-            # Final attempt: direct import from the inner module
-            try:
-                from youtube_transcript_api._transcripts import YouTubeTranscriptApi as DirectClass
-                target_func = DirectClass.get_transcript
-            except:
-                raise Exception(f"Fatal: Could not find YouTube function in library members: {dir(yta)}")
-
-        # Execute
-        result = target_func(video_id)
+        # 1. Look in the module
+        target = find_method(yta)
         
-        # Parse result (it could be a list or a Transcripts object)
-        if hasattr(result, 'find_transcript'):
-            # It's a Transcripts object (from list_transcripts)
-            try:
-                final_data = result.find_transcript(['en']).fetch()
-            except:
-                final_data = next(iter(result)).fetch()
+        # 2. Look in the main class
+        if not target and hasattr(yta, 'YouTubeTranscriptApi'):
+            target = find_method(yta.YouTubeTranscriptApi)
+            
+        # 3. Look in the inner api module
+        if not target and hasattr(yta, '_api'):
+            target = find_method(yta._api)
+
+        if not target:
+            # Absolute last resort: try to force it
+            from youtube_transcript_api import YouTubeTranscriptApi
+            target = YouTubeTranscriptApi.get_transcript
+
+        result = target(video_id)
+        
+        # Handle different return types
+        if isinstance(result, list):
+            return " ".join([i['text'] for i in result])
         else:
-            # It's a list (from get_transcript)
-            final_data = result
+            # Assume it's a Transcripts object
+            try:
+                return " ".join([i['text'] for i in result.find_transcript(['en']).fetch()])
+            except:
+                return " ".join([i['text'] for i in next(iter(result)).fetch()])
 
-        return " ".join([i['text'] for i in final_data])
+    except Exception as e:
+        raise Exception(f"Deep Scan Error: {str(e)}. Try visiting https://web-production-1c163c.up.railway.app/ to wake up the server.")
 
     except Exception as e:
         raise Exception(f"YouTube Nuclear Fix Error: {str(e)}")

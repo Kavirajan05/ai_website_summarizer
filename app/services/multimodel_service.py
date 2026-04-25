@@ -32,12 +32,22 @@ async def call_gemini(query: str, system_instruction: str = "") -> str:
         result = model.generate_content(full_query)
         return result.text.strip()
 
-    try:
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, _sync_call)
-    except Exception as e:
-        logger.error(f"[Gemini] Failed: {e}")
-        return f"[Error: {str(e)}]"
+    async def _attempt_call():
+        for attempt in range(4):
+            try:
+                loop = asyncio.get_event_loop()
+                return await loop.run_in_executor(None, _sync_call)
+            except Exception as e:
+                error_msg = str(e)
+                if "429" in error_msg and attempt < 3:
+                    wait_time = (attempt + 1) * 3
+                    logger.warning(f"[Gemini] 429 Rate Limit. Retrying in {wait_time}s... (Attempt {attempt+1}/3)")
+                    await asyncio.sleep(wait_time)
+                else:
+                    logger.error(f"[Gemini] Failed: {e}")
+                    return f"[Error: {error_msg}]"
+
+    return await _attempt_call()
 
 async def _timed(name: str, coro) -> tuple:
     t0 = time.perf_counter()
@@ -53,11 +63,14 @@ async def gather_llm_responses(query: str) -> tuple:
     llama_prompt = "You are LLaMA 3.3 70B, an AI by Meta. Answer the query with highly analytical, detailed explanations."
     gemini_prompt = "You are Google Gemini. Answer the query naturally and comprehensively."
     
-    results = await asyncio.gather(
-        _timed("openrouter_qwen", call_gemini(query, qwen_prompt)),
-        _timed("groq_llama", call_gemini(query, llama_prompt)),
-        _timed("gemini", call_gemini(query, gemini_prompt)),
-    )
+    # Run sequentially to avoid blowing up the Gemini Free Tier concurrent rate limit
+    res_qwen = await _timed("openrouter_qwen", call_gemini(query, qwen_prompt))
+    await asyncio.sleep(1) # Small delay to be safe
+    res_llama = await _timed("groq_llama", call_gemini(query, llama_prompt))
+    await asyncio.sleep(1)
+    res_gemini = await _timed("gemini", call_gemini(query, gemini_prompt))
+    
+    results = [res_qwen, res_llama, res_gemini]
     
     responses, latency = {}, {}
     for name, text, elapsed in results:

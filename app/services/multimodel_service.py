@@ -78,7 +78,16 @@ async def call_gemini(query: str) -> str:
 
     def _sync_call() -> str:
         genai.configure(api_key=settings.gemini_api_key)
-        model = genai.GenerativeModel(GEMINI_MODEL)
+        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        model_name = "gemini-1.5-flash"
+        if "models/gemini-1.5-flash" in available_models:
+            model_name = "models/gemini-1.5-flash"
+        elif any("flash" in m for m in available_models):
+            model_name = next(m for m in available_models if "flash" in m)
+        elif available_models:
+            model_name = available_models[0]
+            
+        model = genai.GenerativeModel(model_name)
         result = model.generate_content(query)
         return result.text.strip()
 
@@ -108,13 +117,19 @@ async def gather_llm_responses(query: str) -> tuple:
     return responses, latency
 
 def _fallback_structure(raw: str) -> dict:
+    if not raw or raw == "N/A" or "[Error:" in raw:
+        overview = f"API Error: {raw}"
+    else:
+        overview = raw
+
+        
     return {
         "title": "AI Model Summary",
-        "overview": raw[:300] if raw else "Summary unavailable.",
+        "overview": overview,
         "key_points": [],
         "strengths": [],
         "challenges": [],
-        "conclusion": raw[-200:] if len(raw) > 300 else "",
+        "conclusion": "",
     }
 
 def _extract_json(text: str) -> dict:

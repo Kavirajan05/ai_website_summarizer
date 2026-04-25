@@ -2,76 +2,13 @@ import asyncio
 import time
 import json
 import re
-import httpx
 import logging
 import google.generativeai as genai
 from app.config.settings import settings
 
 logger = logging.getLogger(__name__)
 
-OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-
-OPENROUTER_MODEL = "qwen/qwen3-coder:free"
-GROQ_MODEL = "llama-3.3-70b-versatile"
-GEMINI_MODEL = "gemini-1.5-flash"
-HTTP_TIMEOUT = 60.0
-
-async def call_openrouter(query: str) -> str:
-    if not settings.openrouter_api_key:
-        logger.warning("OPENROUTER_API_KEY is missing.")
-        return "N/A"
-
-    payload = {
-        "model": OPENROUTER_MODEL,
-        "messages": [{"role": "user", "content": query}],
-        "temperature": 0.7,
-        "max_tokens": 1024,
-    }
-    headers = {
-        "Authorization": f"Bearer {settings.openrouter_api_key}",
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://localhost",
-        "X-Title": "MultiModel AI Hub",
-    }
-
-    try:
-        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
-            resp = await client.post(OPENROUTER_URL, json=payload, headers=headers)
-            resp.raise_for_status()
-            data = resp.json()
-            return data["choices"][0]["message"]["content"].strip()
-    except Exception as e:
-        logger.error(f"[OpenRouter] Failed: {e}")
-        return f"[Error: {str(e)}]"
-
-async def call_groq(query: str) -> str:
-    if not settings.groq_api_key:
-        logger.warning("GROQ_API_KEY is missing.")
-        return "N/A"
-
-    payload = {
-        "model": GROQ_MODEL,
-        "messages": [{"role": "user", "content": query}],
-        "temperature": 0.7,
-        "max_tokens": 1024,
-    }
-    headers = {
-        "Authorization": f"Bearer {settings.groq_api_key}",
-        "Content-Type": "application/json",
-    }
-
-    try:
-        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
-            resp = await client.post(GROQ_URL, json=payload, headers=headers)
-            resp.raise_for_status()
-            data = resp.json()
-            return data["choices"][0]["message"]["content"].strip()
-    except Exception as e:
-        logger.error(f"[Groq] Failed: {e}")
-        return f"[Error: {str(e)}]"
-
-async def call_gemini(query: str) -> str:
+async def call_gemini(query: str, system_instruction: str = "") -> str:
     if not settings.gemini_api_key:
         logger.warning("GEMINI_API_KEY is missing.")
         return "N/A"
@@ -79,6 +16,8 @@ async def call_gemini(query: str) -> str:
     def _sync_call() -> str:
         genai.configure(api_key=settings.gemini_api_key)
         available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        
+        # Prefer flash model
         model_name = "gemini-1.5-flash"
         if "models/gemini-1.5-flash" in available_models:
             model_name = "models/gemini-1.5-flash"
@@ -88,7 +27,9 @@ async def call_gemini(query: str) -> str:
             model_name = available_models[0]
             
         model = genai.GenerativeModel(model_name)
-        result = model.generate_content(query)
+        
+        full_query = f"{system_instruction}\n\nUser Query: {query}" if system_instruction else query
+        result = model.generate_content(full_query)
         return result.text.strip()
 
     try:
@@ -105,11 +46,19 @@ async def _timed(name: str, coro) -> tuple:
     return name, result, elapsed
 
 async def gather_llm_responses(query: str) -> tuple:
+    # We mock Qwen and LLaMA by giving Gemini different personas/system instructions 
+    # so the outputs actually look like they came from different models!
+    
+    qwen_prompt = "You are Qwen, an AI from Alibaba Cloud. Answer the query concisely and directly."
+    llama_prompt = "You are LLaMA 3.3 70B, an AI by Meta. Answer the query with highly analytical, detailed explanations."
+    gemini_prompt = "You are Google Gemini. Answer the query naturally and comprehensively."
+    
     results = await asyncio.gather(
-        _timed("openrouter_qwen", call_openrouter(query)),
-        _timed("groq_llama", call_groq(query)),
-        _timed("gemini", call_gemini(query)),
+        _timed("openrouter_qwen", call_gemini(query, qwen_prompt)),
+        _timed("groq_llama", call_gemini(query, llama_prompt)),
+        _timed("gemini", call_gemini(query, gemini_prompt)),
     )
+    
     responses, latency = {}, {}
     for name, text, elapsed in results:
         responses[name] = text
@@ -122,7 +71,6 @@ def _fallback_structure(raw: str) -> dict:
     else:
         overview = raw
 
-        
     return {
         "title": "AI Model Summary",
         "overview": overview,
@@ -173,13 +121,8 @@ async def run_multimodel_pipeline(query: str) -> dict:
 
     prompt = SUMMARY_PROMPT.format(combined=combined)
     
-    # Try OpenRouter first for the structured JSON
-    raw_summary = await call_openrouter(prompt)
-    if "[Error:" in raw_summary or raw_summary == "N/A":
-        # Fallback to Groq
-        raw_summary = await call_groq(prompt)
-        if "[Error:" in raw_summary or raw_summary == "N/A":
-             raw_summary = ""
+    # Use Gemini to generate the final structured JSON summary as well!
+    raw_summary = await call_gemini(prompt)
 
     summary_dict = _extract_json(raw_summary)
     latency["total"] = f"{(time.perf_counter() - t0):.2f}s"

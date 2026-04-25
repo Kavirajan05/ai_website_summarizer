@@ -28,14 +28,23 @@ def background_process_and_email(url: str, email: str):
         logger.error(f"Error processing {url}: {str(e)}")
 
 @router.post("/summarize-website")
-async def summarize_website(request: SummarizeRequest, background_tasks: BackgroundTasks):
-    # Validate the URL internally
+async def summarize_website(request: SummarizeRequest):
     url_str = str(request.url)
-    
-    # Send process to background queue
-    background_tasks.add_task(background_process_and_email, url_str, request.email)
-    
-    return {
-        "status": "processing",
-        "message": "Report will be sent to email"
-    }
+    try:
+        logger.info(f"Starting processing for URL: {url_str}")
+        
+        # Step 1: Scrape
+        scraped_text = scrape_website(url_str)
+        
+        # Step 2: AI Process
+        report_data = process_with_ai(scraped_text)
+        logger.info("Successfully generated AI summary.")
+        
+        return {
+            "status": "success",
+            "data": report_data
+        }
+        
+    except Exception as e:
+        logger.error(f"Error processing {url_str}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

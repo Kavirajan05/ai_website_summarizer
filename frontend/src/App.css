@@ -62,6 +62,25 @@
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
 
+.file-upload-wrapper {
+  background: rgba(0, 0, 0, 0.2);
+  border: 2px dashed var(--glass-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.file-upload-wrapper:hover {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.file-upload-wrapper input[type="file"] {
+  width: 100%;
+  cursor: pointer;
+}
+
 .submit-btn {
   width: 100%;
   background: var(--primary);

@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from app.routes.summarize import router as summarize_router
 from app.routes.service_finder import router as service_finder_router
+from app.routes.document_summarizer import router as document_summarizer_router
 
 app = FastAPI(
     title="AI Automation Hub",
@@ -22,6 +23,7 @@ app.add_middleware(
 # Include routers
 app.include_router(summarize_router)
 app.include_router(service_finder_router)
+app.include_router(document_summarizer_router)
 
 @app.get("/")
 def read_root():

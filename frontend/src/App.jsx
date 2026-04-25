@@ -6,7 +6,8 @@ function App() {
   const [service, setService] = useState('')
   const [city, setCity] = useState('')
   const [userEmail, setUserEmail] = useState('')
-  const [activeTab, setActiveTab] = useState('website') // 'website', 'youtube', or 'services'
+  const [docFile, setDocFile] = useState(null)
+  const [activeTab, setActiveTab] = useState('website') // 'website', 'youtube', 'services', or 'document'
   const [loading, setLoading] = useState(false)
   const [reportData, setReportData] = useState(null)
   const [status, setStatus] = useState(null)
@@ -19,31 +20,38 @@ function App() {
 
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001'
     let endpoint = ''
-    let payload = {}
+    let body = null
+    let headers = {}
 
     if (activeTab === 'website') {
       endpoint = 'summarize-website'
-      payload = { url, email: 'user@example.com' }
+      headers = { 'Content-Type': 'application/json' }
+      body = JSON.stringify({ url, email: userEmail.trim() || 'user@example.com' })
     } else if (activeTab === 'youtube') {
       endpoint = 'summarize-youtube'
-      payload = { url, email: 'user@example.com' }
-    } else {
+      headers = { 'Content-Type': 'application/json' }
+      body = JSON.stringify({ url, email: userEmail.trim() || 'user@example.com' })
+    } else if (activeTab === 'services') {
       endpoint = 'find-services'
-      // Only send email if it's a valid non-empty string
-      payload = { 
+      headers = { 'Content-Type': 'application/json' }
+      body = JSON.stringify({ 
         service, 
         city, 
         email: userEmail.trim() === '' ? null : userEmail 
-      }
+      })
+    } else if (activeTab === 'document') {
+      endpoint = 'summarize-document'
+      const formData = new FormData()
+      formData.append('file', docFile)
+      body = formData
+      // Note: Don't set Content-Type header for FormData, browser does it with boundary
     }
 
     try {
       const response = await fetch(`${apiUrl}/${endpoint}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
+        headers: headers,
+        body: body,
       })
 
       const result = await response.json()
@@ -52,10 +60,10 @@ function App() {
         setReportData(result.data)
         setStatus({
           type: 'success',
-          message: activeTab === 'services' ? 'Services found and analyzed!' : 'Summary generated successfully!',
+          message: activeTab === 'services' ? 'Services found and analyzed!' : 
+                   activeTab === 'document' ? 'Document summarized successfully!' : 'Summary generated successfully!',
         })
       } else {
-        // Handle cases where detail might be an object/array (FastAPI validation errors)
         const errorMessage = result.detail 
           ? (typeof result.detail === 'string' ? result.detail : JSON.stringify(result.detail))
           : 'Something went wrong';
@@ -74,6 +82,7 @@ function App() {
   const getHeaderText = () => {
     if (activeTab === 'website') return 'Instant expert summaries from any URL.'
     if (activeTab === 'youtube') return 'Instant expert summaries from any YouTube Video.'
+    if (activeTab === 'document') return 'Instant expert summaries from any PDF Document.'
     return 'Find and analyze the best local service providers.'
   }
 
@@ -98,6 +107,12 @@ function App() {
           🎬 YouTube
         </button>
         <button 
+          className={`tab-btn ${activeTab === 'document' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('document'); setReportData(null); setStatus(null); }}
+        >
+          📄 Document
+        </button>
+        <button 
           className={`tab-btn ${activeTab === 'services' ? 'active' : ''}`}
           onClick={() => { setActiveTab('services'); setReportData(null); setStatus(null); }}
         >
@@ -106,7 +121,7 @@ function App() {
       </div>
 
       <form onSubmit={handleSubmit}>
-        {activeTab !== 'services' ? (
+        {activeTab === 'website' || activeTab === 'youtube' ? (
           <div className="input-group">
             <label htmlFor="url">
               {activeTab === 'website' ? 'Website URL' : 'YouTube Video URL'}
@@ -119,6 +134,19 @@ function App() {
               onChange={(e) => setUrl(e.target.value)}
               required
             />
+          </div>
+        ) : activeTab === 'document' ? (
+          <div className="input-group">
+            <label htmlFor="file">Upload PDF Document</label>
+            <div className="file-upload-wrapper">
+              <input
+                id="file"
+                type="file"
+                accept=".pdf,application/pdf"
+                onChange={(e) => setDocFile(e.target.files[0])}
+                required
+              />
+            </div>
           </div>
         ) : (
           <>
@@ -144,27 +172,35 @@ function App() {
                 required
               />
             </div>
-            <div className="input-group">
-              <label htmlFor="email">Your Email (optional)</label>
-              <input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={userEmail}
-                onChange={(e) => setUserEmail(e.target.value)}
-              />
-            </div>
           </>
+        )}
+
+        {activeTab !== 'document' && (
+          <div className="input-group">
+            <label htmlFor="email">Your Email {activeTab === 'services' ? '(optional)' : '(for results)'}</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="your@email.com"
+              value={userEmail}
+              onChange={(e) => setUserEmail(e.target.value)}
+              required={activeTab !== 'services' && activeTab !== 'document'}
+            />
+          </div>
         )}
 
         <button type="submit" className="submit-btn" disabled={loading}>
           {loading ? (
             <>
               <div className="loader"></div>
-              {activeTab === 'website' ? 'Analyzing Content...' : activeTab === 'youtube' ? 'Transcribing Video...' : 'Searching Services...'}
+              {activeTab === 'website' ? 'Analyzing Content...' : 
+               activeTab === 'youtube' ? 'Transcribing Video...' : 
+               activeTab === 'document' ? 'Processing PDF...' : 'Searching Services...'}
             </>
           ) : (
-            activeTab === 'website' ? 'Summarize Website' : activeTab === 'youtube' ? 'Summarize Video' : 'Find Best Services'
+            activeTab === 'website' ? 'Summarize Website' : 
+            activeTab === 'youtube' ? 'Summarize Video' : 
+            activeTab === 'document' ? 'Summarize Document' : 'Find Best Services'
           )}
         </button>
       </form>
@@ -182,7 +218,7 @@ function App() {
           </div>
           
           <div className="report-section">
-            <h3>{activeTab === 'website' ? 'Summary' : 'Video Summary'}</h3>
+            <h3>{activeTab === 'website' ? 'Summary' : activeTab === 'youtube' ? 'Video Summary' : 'Document Summary'}</h3>
             <p>{reportData.summary}</p>
           </div>
 
@@ -190,21 +226,32 @@ function App() {
             <div className="report-card">
               <h3>Key Insights</h3>
               <ul>
-                {reportData.insights.map((item, i) => <li key={i}>{item}</li>)}
+                {reportData.insights && reportData.insights.map((item, i) => <li key={i}>{item}</li>)}
               </ul>
             </div>
             
-            <div className="report-card">
-              <h3>Use Cases</h3>
-              <ul>
-                {reportData.use_cases.map((item, i) => <li key={i}>{item}</li>)}
-              </ul>
-            </div>
+            {reportData.use_cases && (
+              <div className="report-card">
+                <h3>Use Cases</h3>
+                <ul>
+                  {reportData.use_cases.map((item, i) => <li key={i}>{item}</li>)}
+                </ul>
+              </div>
+            )}
+
+            {!reportData.use_cases && reportData.keywords && (
+              <div className="report-card">
+                <h3>Main Keywords</h3>
+                <ul>
+                  {reportData.keywords.map((item, i) => <li key={i}>{item}</li>)}
+                </ul>
+              </div>
+            )}
           </div>
 
           <div className="report-footer">
             <div className="tags">
-              {reportData.keywords.map((tag, i) => <span key={i} className="tag">#{tag}</span>)}
+              {reportData.keywords && reportData.keywords.map((tag, i) => <span key={i} className="tag">#{tag}</span>)}
             </div>
           </div>
         </div>
@@ -253,7 +300,7 @@ function App() {
           <div className="report-footer">
             <h3>Key Insights</h3>
             <div className="tags">
-              {reportData.insights.map((insight, i) => <span key={i} className="tag insight-tag">{insight}</span>)}
+              {reportData.insights && reportData.insights.map((insight, i) => <span key={i} className="tag insight-tag">{insight}</span>)}
             </div>
           </div>
         </div>

@@ -73,10 +73,15 @@ def send_summary_email(recipient_email: str, target_url: str, report: dict):
     msg.add_alternative(html_content, subtype='html')
 
     try:
-        with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
-            server.set_debuglevel(0)
-            server.starttls()
-            server.login(settings.smtp_user, settings.smtp_pass)
-            server.send_message(msg)
+        # Use SMTP_SSL for port 465, otherwise use standard SMTP with STARTTLS
+        if settings.smtp_port == 465:
+            with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port) as server:
+                server.login(settings.smtp_user, settings.smtp_pass)
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
+                server.starttls()
+                server.login(settings.smtp_user, settings.smtp_pass)
+                server.send_message(msg)
     except Exception as e:
         raise Exception(f"Failed to send email: {str(e)}")

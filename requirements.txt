@@ -12,3 +12,4 @@ emails==0.6
 youtube-transcript-api==0.6.2
 groq
 yt-dlp
+httpx==0.27.0

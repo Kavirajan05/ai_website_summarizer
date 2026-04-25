@@ -2,11 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from app.routes.summarize import router as summarize_router
+from app.routes.service_finder import router as service_finder_router
 
 app = FastAPI(
-    title="AI Website Summarizer API",
-    description="API to scrape websites, analyze with LLM, and send email reports.",
-    version="1.0.0"
+    title="AI Automation Hub",
+    description="Multi-service AI automation backend (Website/YouTube Summarizer & Local Service Finder).",
+    version="1.1.0"
 )
 
 # Enable CORS
@@ -18,8 +19,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include the summarize router
+# Include routers
 app.include_router(summarize_router)
+app.include_router(service_finder_router)
 
 @app.get("/")
 def read_root():

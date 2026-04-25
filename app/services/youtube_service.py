@@ -48,11 +48,12 @@ def fetch_transcript_via_groq(url: str) -> str:
     ydl_opts = {
         'format': 'm4a/bestaudio/best',
         'outtmpl': audio_file,
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'm4a',
-        }],
-        'max_filesize': 25 * 1024 * 1024, # 25MB limit
+        'quiet': True,
+        'no_warnings': True,
+        # STEALTH SETTINGS
+        'user_agent': 'Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36',
+        'referer': 'https://www.google.com/',
+        'nocheckcertificate': True,
     }
 
     try:

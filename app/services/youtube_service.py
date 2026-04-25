@@ -26,42 +26,31 @@ def fetch_youtube_transcript(url: str) -> str:
 
     try:
         import youtube_transcript_api as yta
-        
-        # Deep Scan Logic: Find the REAL function and skip all classes
+        lib_path = getattr(yta, '__file__', 'unknown')
+
+        # Deep Scan Logic
         def find_method(obj):
-            # Prioritize 'get_transcript' specifically
-            if hasattr(obj, 'get_transcript'):
-                return getattr(obj, 'get_transcript')
-            
             for name in dir(obj):
-                # Skip any names that look like classes (start with capital or end in Fetcher/List)
                 if name.endswith('Fetcher') or name.endswith('List') or name == 'YouTubeTranscriptApi':
                     continue
-                    
                 if 'transcript' in name.lower() and ('get' in name.lower() or 'list' in name.lower()):
                     attr = getattr(obj, name)
-                    # ONLY pick it if it's a function, NOT a class (type)
                     if callable(attr) and not isinstance(attr, type):
                         return attr
             return None
 
-        # 1. Look in the module
         target = find_method(yta)
-        
-        # 2. Look in the main class
         if not target and hasattr(yta, 'YouTubeTranscriptApi'):
+            # Try both class and instance
             target = find_method(yta.YouTubeTranscriptApi)
-            
-        # 3. Look in the inner api module
-        if not target and hasattr(yta, '_api'):
-            target = find_method(yta._api)
+            if not target:
+                target = find_method(yta.YouTubeTranscriptApi())
 
         if not target:
-            # Absolute last resort: try to force it
-            from youtube_transcript_api import YouTubeTranscriptApi
-            target = YouTubeTranscriptApi.get_transcript
+            raise Exception(f"Library path: {lib_path}. Members: {dir(yta)}. Maybe try installing 'pip install youtube-transcript-api' again.")
 
         result = target(video_id)
+        # ... rest of the result handling logic ...
         
         # Handle different return types
         if isinstance(result, list):

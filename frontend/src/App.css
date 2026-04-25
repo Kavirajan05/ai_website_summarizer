@@ -247,3 +247,89 @@ form {
   font-size: 0.85rem;
   border: 1px solid rgba(99, 102, 241, 0.2);
 }
+
+/* Service Finder Styles */
+.highlight {
+  border-left: 4px solid var(--accent) !important;
+  background: rgba(16, 185, 129, 0.05) !important;
+}
+
+.highlight h3 {
+  color: var(--accent) !important;
+}
+
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.rec-item {
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.rec-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.rec-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.rec-main h4 {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.rating {
+  font-size: 0.9rem;
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.reasoning {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0.5rem 0 1rem 0;
+}
+
+.rec-links {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.rec-links a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.rec-links a:hover {
+  text-decoration: underline;
+}
+
+.rec-links span {
+  color: var(--text-secondary);
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.insight-tag {
+  background: rgba(192, 132, 252, 0.1);
+  color: #c084fc;
+  border-color: rgba(192, 132, 252, 0.2);
+}

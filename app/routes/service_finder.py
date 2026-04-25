@@ -8,16 +8,17 @@ from app.services.lsf_email_service import send_results_email
 
 router = APIRouter()
 
-async def process_service_request(request: ServiceRequest):
+@router.post("/find-services")
+async def find_services(request: ServiceRequest):
     # 1. Fetch data from SerpAPI (Google Local)
     print(f"Fetching {request.service} in {request.city} via SerpAPI...")
     raw_data = await fetch_serpapi_services(request.service, request.city)
     
     if not raw_data:
-        print(f"No results found for {request.service} in {request.city}")
-        send_results_email(
-            user_email=request.email,
-            ai_data={
+        return {
+            "status": "error",
+            "message": "No results found for your search.",
+            "data": {
                 "service": request.service,
                 "city": request.city,
                 "top_recommendations": [],
@@ -25,8 +26,7 @@ async def process_service_request(request: ServiceRequest):
                 "summary": "We couldn't find any results for your search. Please check the service type or city name and try again.",
                 "insights": []
             }
-        )
-        return
+        }
 
     # 2. Clean and Filter data (Ratings > 3.5, de-duplication)
     cleaned_data = clean_business_data(raw_data)
@@ -39,16 +39,7 @@ async def process_service_request(request: ServiceRequest):
     print("Performing AI Analysis...")
     ai_results = await analyze_services_with_ai(request.service, request.city, cleaned_data)
 
-    # 4. Email the processed results
-    print(f"Sending email to {request.email}...")
-    await asyncio.to_thread(send_results_email, request.email, ai_results)
-
-
-@router.post("/find-services")
-async def find_services(request: ServiceRequest, background_tasks: BackgroundTasks):
-    background_tasks.add_task(process_service_request, request)
-    
     return {
         "status": "success",
-        "message": "Results will be sent to your email shortly"
+        "data": ai_results
     }

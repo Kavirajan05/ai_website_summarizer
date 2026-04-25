@@ -4,7 +4,8 @@ requests==2.31.0
 beautifulsoup4==4.12.3
 google-generativeai>=0.7.0
 python-dotenv==1.0.1
-pydantic==2.6.1
+pydantic[email]==2.6.1
+email-validator>=2.0.0
 pydantic-settings==2.2.1
 validators==0.22.0
 emails==0.6

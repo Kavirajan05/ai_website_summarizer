@@ -29,7 +29,12 @@ function App() {
       payload = { url, email: 'user@example.com' }
     } else {
       endpoint = 'find-services'
-      payload = { service, city, email: userEmail }
+      // Only send email if it's a valid non-empty string
+      payload = { 
+        service, 
+        city, 
+        email: userEmail.trim() === '' ? null : userEmail 
+      }
     }
 
     try {
@@ -50,7 +55,11 @@ function App() {
           message: activeTab === 'services' ? 'Services found and analyzed!' : 'Summary generated successfully!',
         })
       } else {
-        throw new Error(result.detail || 'Something went wrong')
+        // Handle cases where detail might be an object/array (FastAPI validation errors)
+        const errorMessage = result.detail 
+          ? (typeof result.detail === 'string' ? result.detail : JSON.stringify(result.detail))
+          : 'Something went wrong';
+        throw new Error(errorMessage)
       }
     } catch (err) {
       setStatus({

@@ -27,19 +27,21 @@ def fetch_youtube_transcript(url: str) -> str:
     try:
         import youtube_transcript_api as yta
         
-        # Deep Scan Logic: Find the REAL function and skip the classes
+        # Deep Scan Logic: Find the REAL function and skip all classes
         def find_method(obj):
             # Prioritize 'get_transcript' specifically
             if hasattr(obj, 'get_transcript'):
                 return getattr(obj, 'get_transcript')
             
             for name in dir(obj):
-                # Skip the TranscriptList class itself
-                if name == 'TranscriptList':
+                # Skip any names that look like classes (start with capital or end in Fetcher/List)
+                if name.endswith('Fetcher') or name.endswith('List') or name == 'YouTubeTranscriptApi':
                     continue
+                    
                 if 'transcript' in name.lower() and ('get' in name.lower() or 'list' in name.lower()):
                     attr = getattr(obj, name)
-                    if callable(attr):
+                    # ONLY pick it if it's a function, NOT a class (type)
+                    if callable(attr) and not isinstance(attr, type):
                         return attr
             return None
 

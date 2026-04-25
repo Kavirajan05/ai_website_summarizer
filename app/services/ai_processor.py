@@ -7,9 +7,6 @@ if settings.gemini_api_key:
     genai.configure(api_key=settings.gemini_api_key)
 
 def process_with_ai(scraped_text: str) -> dict:
-    """
-    Sends the scraped text to the LLM and asks for structured JSON output.
-    """
     if not settings.gemini_api_key:
         raise ValueError("GEMINI_API_KEY is not set.")
     
@@ -37,47 +34,15 @@ def process_with_ai(scraped_text: str) -> dict:
     {scraped_text}
     """
 
-    # Using gemini-1.5-flash-latest for better compatibility
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(
             prompt,
-            generation_config=main_generation_config()
+            generation_config={"response_mime_type": "application/json"}
         )
+        return json.loads(response.text)
     except Exception as e:
-        if "404" in str(e):
-            # Fallback to gemini-pro if Flash is not found
-            model = genai.GenerativeModel('gemini-pro')
-            response = model.generate_content(prompt)
-        else:
-            raise e
-    
-    raw_text = response.text.strip()
-    
-    # Robust JSON extraction
-    try:
-        # 1. Try direct parse
-        return json.loads(raw_text)
-    except json.JSONDecodeError:
-        try:
-            # 2. Try cleaning markdown markers if present
-            clean_text = raw_text
-            if "```" in raw_text:
-                clean_text = raw_text.split("```")[1]
-                if clean_text.startswith("json"):
-                    clean_text = clean_text[4:]
-            return json.loads(clean_text)
-        except Exception:
-            # 3. Last resort: just try to find the first { and last }
-            try:
-                start = raw_text.find('{')
-                end = raw_text.rfind('}') + 1
-                if start != -1 and end != 0:
-                    return json.loads(raw_text[start:end])
-                else:
-                    raise Exception("No JSON object found in response.")
-            except Exception:
-                raise Exception(f"AI returned invalid format. Raw: {raw_text[:100]}...")
+        raise Exception(f"Google AI Error: {str(e)}")
 
 def main_generation_config():
     return genai.types.GenerationConfig(

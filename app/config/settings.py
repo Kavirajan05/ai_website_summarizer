@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_user: str = ""
     smtp_pass: str = ""
+    youtube_api_key: str = ""
 
     class Config:
         env_file = ".env"

@@ -56,11 +56,17 @@ def fetch_youtube_transcript(url: str) -> str:
         if isinstance(result, list):
             return " ".join([i['text'] for i in result])
         else:
-            # Assume it's a Transcripts object
+            # Handle the result object from 'list_transcripts'
             try:
+                # 1. Try manual English
                 return " ".join([i['text'] for i in result.find_transcript(['en']).fetch()])
             except:
-                return " ".join([i['text'] for i in next(iter(result)).fetch()])
+                try:
+                    # 2. Try generated English
+                    return " ".join([i['text'] for i in result.find_generated_transcript(['en']).fetch()])
+                except:
+                    # 3. Last resort: literally anything
+                    return " ".join([i['text'] for i in next(iter(result)).fetch()])
 
     except Exception as e:
         raise Exception(f"Deep Scan Error: {str(e)}. Try visiting https://web-production-1c163c.up.railway.app/ to wake up the server.")

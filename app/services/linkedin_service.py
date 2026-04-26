@@ -1,4 +1,6 @@
 import os
+os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/app/pw-browsers"
+
 import json
 import logging
 import asyncio

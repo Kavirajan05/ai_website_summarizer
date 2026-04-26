@@ -50,10 +50,16 @@ def fetch_transcript_via_groq(url: str) -> str:
         'outtmpl': audio_file,
         'quiet': True,
         'no_warnings': True,
-        # STEALTH SETTINGS
+        # STEALTH SETTINGS (Force Android client to bypass bot check)
         'user_agent': 'Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36',
         'referer': 'https://www.google.com/',
         'nocheckcertificate': True,
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'ios'],
+                'skip': ['hls', 'dash']
+            }
+        }
     }
 
     try:

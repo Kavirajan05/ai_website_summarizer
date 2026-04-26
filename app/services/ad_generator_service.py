@@ -73,19 +73,18 @@ def generate_marketing_image(input_image_bytes: bytes, product_title: str, produ
         if not settings.hf_token:
             raise ValueError("Hugging Face token (HF_TOKEN) is not configured.")
 
-        # Step 2: Initialize HF Client
+        # Step 2: Initialize HF Client (Native HF Inference)
         hf_client = InferenceClient(
-            provider="fal-ai",
             api_key=settings.hf_token,
         )
         
         # Step 3: Run image-to-image generation
-        # We use Stable Diffusion XL which supports image-to-image
+        # We use Stable Diffusion v1.5 which is very stable on HF native inference
         generated_image = hf_client.image_to_image(
             input_image_bytes,
             prompt=marketing_prompt,
-            model="stabilityai/stable-diffusion-xl-base-1.0",
-            strength=0.4,
+            model="runwayml/stable-diffusion-v1-5",
+            strength=0.5,
             guidance_scale=7.5
         )
         

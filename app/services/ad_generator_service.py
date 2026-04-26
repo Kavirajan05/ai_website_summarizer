@@ -51,7 +51,7 @@ Return ONLY the final prompt. No explanation."""
         try:
             # Fallback to Gemini
             genai.configure(api_key=settings.gemini_api_key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-flash-latest')
             
             response = model.generate_content(
                 f"You are a marketing expert. Create a professional text-to-image prompt for a product advertisement. "

@@ -79,11 +79,11 @@ def generate_marketing_image(input_image_bytes: bytes, product_title: str, produ
         )
         
         # Step 3: Run image-to-image generation
-        # We use Stable Diffusion v1.5 which is very stable on HF native inference
+        # We use Stable Diffusion 2.1 which is very reliable on HF native inference
         generated_image = hf_client.image_to_image(
             input_image_bytes,
             prompt=marketing_prompt,
-            model="runwayml/stable-diffusion-v1-5",
+            model="stabilityai/stable-diffusion-2-1",
             strength=0.5,
             guidance_scale=7.5
         )

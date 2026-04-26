@@ -14,7 +14,7 @@ async def fetch_profile_text(url: str) -> str:
     
     try:
         async with async_playwright() as p:
-            # Launch browser
+            # Launch browser (Path is controlled by env var in nixpacks.toml)
             browser = await p.chromium.launch(headless=True)
             page = await browser.new_page(
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"

@@ -19,9 +19,11 @@ async def generate_ad(
         base64_image = generate_marketing_image(image_bytes, title, description)
         
         return {
-            "success": True,
-            "image": f"data:image/png;base64,{base64_image}",
-            "title": title
+            "status": "success",
+            "data": {
+                "image": f"data:image/png;base64,{base64_image}",
+                "title": title
+            }
         }
     except Exception as e:
         logger.error(f"Ad generation route failed: {e}")

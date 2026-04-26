@@ -1,8 +1,26 @@
 [phases.setup]
-nixPkgs = ["python311", "chromium", "chromedriver", "glib", "nss", "fontconfig", "freetype"]
+nixPkgs = [
+    "python311",
+    "chromium",
+    "chromedriver",
+    "glib",
+    "nss",
+    "fontconfig",
+    "freetype",
+    "libX11",
+    "libXcomposite",
+    "libXdamage",
+    "libXext",
+    "libXfixes",
+    "libXrandr",
+    "libgbm",
+    "pango",
+    "at-spi2-atk",
+    "cups"
+]
 
 [phases.build]
 cmds = ["pip install -r requirements.txt"]
 
 [start]
-cmd = "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"
+cmd = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"

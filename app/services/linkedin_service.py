@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 import re
@@ -26,20 +27,21 @@ def fetch_profile_text(url: str) -> str:
     
     try:
         import shutil
-        chromedriver_path = shutil.which("chromedriver")
+        chromedriver_path = shutil.which("chromedriver") or "/usr/bin/chromedriver"
+        chromium_path = shutil.which("chromium") or "/usr/bin/chromium"
         
-        if chromedriver_path:
+        if os.path.exists(chromedriver_path):
             # Running on Nixpacks/Linux
-            logger.info(f"Using Nixpacks chromedriver: {chromedriver_path}")
+            logger.info(f"Using Linux chromedriver: {chromedriver_path}")
             service = Service(chromedriver_path)
             
-            chromium_path = shutil.which("chromium")
-            if chromium_path:
+            if os.path.exists(chromium_path):
                 options.binary_location = chromium_path
+                logger.info(f"Using Linux chromium: {chromium_path}")
                 
             driver = webdriver.Chrome(service=service, options=options)
         else:
-            # Local fallback
+            # Local fallback (Windows/Mac)
             logger.info("Using ChromeDriverManager for local environment")
             service = Service(ChromeDriverManager().install())
             driver = webdriver.Chrome(service=service, options=options)

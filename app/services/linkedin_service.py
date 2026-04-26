@@ -25,29 +25,12 @@ def fetch_profile_text(url: str) -> str:
     logger.info(f"Starting selenium fetch for {url}")
     
     try:
-        import shutil
-        chromedriver_path = shutil.which("chromedriver")
-        
-        if chromedriver_path:
-            # Running on Railway/Linux (use Nixpacks binaries)
-            logger.info(f"Found system chromedriver at {chromedriver_path}")
-            service = Service(chromedriver_path)
-            
-            chromium_path = shutil.which("chromium")
-            if chromium_path:
-                options.binary_location = chromium_path
-                
-            driver = webdriver.Chrome(service=service, options=options)
-        else:
-            # Running locally (use webdriver-manager)
-            logger.info("Using ChromeDriverManager for local environment")
-            service = Service(ChromeDriverManager().install())
-            driver = webdriver.Chrome(service=service, options=options)
-            
+        service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=options)
     except Exception as e:
         error_msg = str(e)
         if "127" in error_msg:
-            raise ValueError("Railway Deployment Error: Chromium dependencies are missing. Please ensure Railway has fully rebuilt the project using the new nixpacks.toml file.")
+            raise ValueError("Railway Deployment Error: Chromium dependencies are missing. Please ensure Railway has fully rebuilt the project using the latest nixpacks.toml file.")
         raise ValueError(f"Could not initialize Chrome. System error: {error_msg}")
 
     driver.get(url)

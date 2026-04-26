@@ -45,7 +45,10 @@ def fetch_profile_text(url: str) -> str:
             driver = webdriver.Chrome(service=service, options=options)
             
     except Exception as e:
-        raise ValueError(f"Could not initialize Chrome. System error: {e}")
+        error_msg = str(e)
+        if "127" in error_msg:
+            raise ValueError("Railway Deployment Error: Chromium dependencies are missing. Please ensure Railway has fully rebuilt the project using the new nixpacks.toml file.")
+        raise ValueError(f"Could not initialize Chrome. System error: {error_msg}")
 
     driver.get(url)
     time.sleep(5)

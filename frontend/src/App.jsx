@@ -11,6 +11,8 @@ function App() {
   const [resumeFile, setResumeFile] = useState(null)
   const [query, setQuery] = useState('')
   const [linkedinUrl, setLinkedinUrl] = useState('')
+  const [manualMode, setManualMode] = useState(false)
+  const [profileText, setProfileText] = useState('')
   const [adTitle, setAdTitle] = useState('')
   const [adDescription, setAdDescription] = useState('')
   const [adImage, setAdImage] = useState(null)
@@ -67,7 +69,10 @@ function App() {
     } else if (activeTab === 'linkedin') {
       endpoint = 'analyze-linkedin'
       headers = { 'Content-Type': 'application/json' }
-      body = JSON.stringify({ url: linkedinUrl })
+      body = JSON.stringify({ 
+        url: manualMode ? "" : linkedinUrl,
+        profile_text: manualMode ? profileText : ""
+      })
     } else if (activeTab === 'ad-generator') {
       endpoint = 'generate-ad'
       const formData = new FormData()
@@ -257,16 +262,47 @@ function App() {
             />
           </div>
         ) : activeTab === 'linkedin' ? (
-          <div className="input-group">
-            <label htmlFor="linkedinUrl">LinkedIn Profile URL</label>
-            <input
-              id="linkedinUrl"
-              type="url"
-              placeholder="https://linkedin.com/in/username"
-              value={linkedinUrl}
-              onChange={(e) => setLinkedinUrl(e.target.value)}
-              required
-            />
+          <div className="linkedin-container">
+            <div className="mode-toggle">
+              <button 
+                className={!manualMode ? "active" : ""} 
+                onClick={() => setManualMode(false)}
+              >
+                Auto-Scrape URL
+              </button>
+              <button 
+                className={manualMode ? "active" : ""} 
+                onClick={() => setManualMode(true)}
+              >
+                Paste Profile Text
+              </button>
+            </div>
+            
+            {!manualMode ? (
+              <div className="input-group">
+                <label htmlFor="linkedinUrl">LinkedIn Profile URL</label>
+                <input
+                  id="linkedinUrl"
+                  type="url"
+                  placeholder="https://linkedin.com/in/username"
+                  value={linkedinUrl}
+                  onChange={(e) => setLinkedinUrl(e.target.value)}
+                  required
+                />
+              </div>
+            ) : (
+              <div className="input-group">
+                <label htmlFor="profileText">Paste LinkedIn Profile Text Here</label>
+                <textarea
+                  id="profileText"
+                  placeholder="Copy and paste the 'About' section or the entire profile text here..."
+                  value={profileText}
+                  onChange={(e) => setProfileText(e.target.value)}
+                  rows={8}
+                  required
+                />
+              </div>
+            )}
           </div>
         ) : activeTab === 'ad-generator' ? (
           <>

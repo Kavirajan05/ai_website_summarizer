@@ -7,22 +7,23 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 class LinkedInRequest(BaseModel):
-    url: str
+    url: str | None = None
+    profile_text: str | None = None
 
 @router.post("/analyze-linkedin", status_code=status.HTTP_200_OK)
 async def analyze_linkedin_endpoint(request: LinkedInRequest):
     """
-    Scrapes a LinkedIn profile using Selenium and analyzes it using Gemini.
+    Analyzes a LinkedIn profile using either a URL (Scraping) or direct text.
     """
-    if not request.url.strip() or "linkedin.com/in/" not in request.url:
+    if not request.url and not request.profile_text:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A valid LinkedIn profile URL is required."
+            detail="Either a LinkedIn URL or profile text is required."
         )
     
     try:
-        logger.info(f"Received LinkedIn analysis request for: {request.url}")
-        result = await analyze_linkedin_profile(request.url)
+        logger.info(f"Received LinkedIn analysis request. URL: {request.url}, Manual: {bool(request.profile_text)}")
+        result = await analyze_linkedin_profile(url=request.url, manual_text=request.profile_text)
         return {
             "status": "success",
             "data": result

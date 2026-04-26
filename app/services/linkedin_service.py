@@ -111,9 +111,15 @@ def _offline_response(profile_text):
         "improved_about": "I build practical backend systems, automate repetitive work, and focus on measurable outcomes using Python and modern web tools.",
     }
 
-async def analyze_linkedin_profile(url: str) -> dict:
-    # 1. Fetch text (let errors bubble up so frontend can see if Selenium fails!)
-    profile_text = fetch_profile_text(url)
+async def analyze_linkedin_profile(url: str = None, manual_text: str = None) -> dict:
+    # 1. Get profile text (either from scraping or manual input)
+    if manual_text:
+        profile_text = manual_text
+        logger.info("Using manually provided profile text for analysis")
+    else:
+        if not url:
+            raise ValueError("URL is required if manual text is not provided.")
+        profile_text = fetch_profile_text(url)
 
     if not profile_text.strip():
         raise ValueError("Could not extract any text from the LinkedIn profile page.")

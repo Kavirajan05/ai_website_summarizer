@@ -257,6 +257,15 @@ function App() {
             />
           </div>
         ) : activeTab === 'linkedin' ? (
+          <div className="input-group">
+            <label htmlFor="linkedinUrl">LinkedIn Profile URL</label>
+            <input
+              id="linkedinUrl"
+              type="url"
+              placeholder="https://linkedin.com/in/username"
+              value={linkedinUrl}
+              onChange={(e) => setLinkedinUrl(e.target.value)}
+              required
             />
           </div>
         ) : activeTab === 'ad-generator' ? (

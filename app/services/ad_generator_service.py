@@ -3,6 +3,7 @@ import base64
 from io import BytesIO
 import logging
 from PIL import Image
+import google.generativeai as genai
 from groq import Groq
 from huggingface_hub import InferenceClient
 from app.config.settings import settings
@@ -46,8 +47,21 @@ Return ONLY the final prompt. No explanation."""
         
         return chat_completion.choices[0].message.content.strip()
     except Exception as e:
-        logger.error(f"Groq prompt generation failed: {e}")
-        return f"Professional studio photography of {product_title}, {product_description}, high quality marketing shot"
+        logger.error(f"Groq failed, trying Gemini: {e}")
+        try:
+            # Fallback to Gemini
+            genai.configure(api_key=settings.gemini_api_key)
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            
+            response = model.generate_content(
+                f"You are a marketing expert. Create a professional text-to-image prompt for a product advertisement. "
+                f"Product: {product_title}, Description: {product_description}. "
+                f"Return ONLY the prompt string."
+            )
+            return response.text.strip()
+        except Exception as ge:
+            logger.error(f"Gemini also failed: {ge}")
+            return f"Hyper-realistic professional studio photography of {product_title}, {product_description}, clean minimalistic elegant style, softbox lighting, high detail, realistic textures, smooth white background, premium advertising look"
 
 def generate_marketing_image(input_image_bytes: bytes, product_title: str, product_description: str) -> str:
     """Generates an enhanced marketing image and returns as base64 string."""
@@ -70,7 +84,7 @@ def generate_marketing_image(input_image_bytes: bytes, product_title: str, produ
         generated_image = hf_client.image_to_image(
             input_image_bytes,
             prompt=marketing_prompt,
-            model="black-forest-labs/FLUX.2-dev",
+            model="black-forest-labs/FLUX.1-dev",
             strength=0.4,
             guidance_scale=7.5
         )

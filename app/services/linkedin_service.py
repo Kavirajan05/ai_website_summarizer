@@ -25,13 +25,16 @@ def fetch_profile_text(url: str) -> str:
     logger.info(f"Starting selenium fetch for {url}")
     
     try:
+        # Try webdriver-manager first (works for local Windows development)
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
-    except Exception as e:
-        logger.warning(f"ChromeDriverManager failed, attempting system chromium: {e}")
-        options.binary_location = "/usr/bin/chromium"
-        service = Service("/usr/bin/chromedriver")
-        driver = webdriver.Chrome(service=service, options=options)
+    except Exception as e1:
+        logger.warning(f"ChromeDriverManager failed, attempting system PATH: {e1}")
+        try:
+            # Fallback for Railway/Nixpacks where chromium and chromedriver are in $PATH
+            driver = webdriver.Chrome(options=options)
+        except Exception as e2:
+            raise ValueError(f"Could not initialize Chrome. Manager error: {e1}. System error: {e2}")
 
     driver.get(url)
     time.sleep(5)

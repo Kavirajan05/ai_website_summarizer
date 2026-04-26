@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-dotenv
+groq
+selenium
+webdriver-manager
+reportlab
+pydantic
+email-validator

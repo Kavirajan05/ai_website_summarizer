@@ -10,7 +10,8 @@ function App() {
   const [docFile, setDocFile] = useState(null)
   const [resumeFile, setResumeFile] = useState(null)
   const [query, setQuery] = useState('')
-  const [activeTab, setActiveTab] = useState('website') // 'website', 'youtube', 'document', 'yt-report', 'services', 'resume', or 'multimodel'
+  const [linkedinUrl, setLinkedinUrl] = useState('')
+  const [activeTab, setActiveTab] = useState('website') // 'website', 'youtube', 'document', 'yt-report', 'services', 'resume', 'multimodel', or 'linkedin'
   const [loading, setLoading] = useState(false)
   const [reportData, setReportData] = useState(null)
   const [status, setStatus] = useState(null)
@@ -60,6 +61,10 @@ function App() {
       endpoint = 'multimodel-summarize'
       headers = { 'Content-Type': 'application/json' }
       body = JSON.stringify({ query })
+    } else if (activeTab === 'linkedin') {
+      endpoint = 'analyze-linkedin'
+      headers = { 'Content-Type': 'application/json' }
+      body = JSON.stringify({ url: linkedinUrl })
     }
 
     try {
@@ -79,7 +84,8 @@ function App() {
                    activeTab === 'document' ? 'Document summarized successfully!' : 
                    activeTab === 'yt-report' ? 'YouTube report generated!' : 
                    activeTab === 'resume' ? 'Resume analyzed successfully!' : 
-                   activeTab === 'multimodel' ? 'Multi-model summary generated!' : 'Summary generated successfully!',
+                   activeTab === 'multimodel' ? 'Multi-model summary generated!' : 
+                   activeTab === 'linkedin' ? 'LinkedIn profile analyzed!' : 'Summary generated successfully!',
         })
       } else {
         const errorMessage = result.detail 
@@ -104,6 +110,7 @@ function App() {
     if (activeTab === 'yt-report') return 'Generate learning reports from YouTube topics.'
     if (activeTab === 'resume') return 'AI-powered ATS scoring and resume analysis.'
     if (activeTab === 'multimodel') return 'Query multiple LLMs (Qwen, LLaMA, Gemini) simultaneously.'
+    if (activeTab === 'linkedin') return 'Analyze LinkedIn profiles to get tailored improvement suggestions.'
     return 'Find and analyze the best local service providers.'
   }
 
@@ -156,6 +163,12 @@ function App() {
           onClick={() => { setActiveTab('multimodel'); setReportData(null); setStatus(null); }}
         >
           🤖 Multi-Model
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'linkedin' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('linkedin'); setReportData(null); setStatus(null); }}
+        >
+          🔗 LinkedIn
         </button>
       </div>
 
@@ -225,6 +238,18 @@ function App() {
               style={{ width: '100%', background: 'rgba(0, 0, 0, 0.2)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '0.8rem 1rem', color: 'white', fontSize: '1rem', outline: 'none', resize: 'vertical' }}
             />
           </div>
+        ) : activeTab === 'linkedin' ? (
+          <div className="input-group">
+            <label htmlFor="linkedinUrl">LinkedIn Profile URL</label>
+            <input
+              id="linkedinUrl"
+              type="url"
+              placeholder="https://linkedin.com/in/username"
+              value={linkedinUrl}
+              onChange={(e) => setLinkedinUrl(e.target.value)}
+              required
+            />
+          </div>
         ) : (
           <>
             <div className="input-group">
@@ -252,7 +277,7 @@ function App() {
           </>
         )}
 
-        {activeTab !== 'document' && activeTab !== 'yt-report' && activeTab !== 'resume' && activeTab !== 'multimodel' && (
+        {activeTab !== 'document' && activeTab !== 'yt-report' && activeTab !== 'resume' && activeTab !== 'multimodel' && activeTab !== 'linkedin' && (
           <div className="input-group">
             <label htmlFor="email">Your Email {activeTab === 'services' ? '(optional)' : '(for results)'}</label>
             <input
@@ -275,7 +300,8 @@ function App() {
                activeTab === 'document' ? 'Processing PDF...' : 
                activeTab === 'yt-report' ? 'Generating Report...' : 
                activeTab === 'resume' ? 'Analyzing Resume...' : 
-               activeTab === 'multimodel' ? 'Querying Models...' : 'Searching Services...'}
+               activeTab === 'multimodel' ? 'Querying Models...' : 
+               activeTab === 'linkedin' ? 'Analyzing Profile...' : 'Searching Services...'}
             </>
           ) : (
             activeTab === 'website' ? 'Summarize Website' : 
@@ -283,7 +309,8 @@ function App() {
             activeTab === 'document' ? 'Summarize Document' : 
             activeTab === 'yt-report' ? 'Generate YT Report' : 
             activeTab === 'resume' ? 'Analyze Resume' : 
-            activeTab === 'multimodel' ? 'Ask Multimodel AI' : 'Find Best Services'
+            activeTab === 'multimodel' ? 'Ask Multimodel AI' : 
+            activeTab === 'linkedin' ? 'Analyze Profile' : 'Find Best Services'
           )}
         </button>
       </form>
@@ -325,7 +352,7 @@ function App() {
         </div>
       )}
 
-      {reportData && activeTab !== 'services' && activeTab !== 'yt-report' && activeTab !== 'resume' && activeTab !== 'multimodel' && (
+      {reportData && activeTab !== 'services' && activeTab !== 'yt-report' && activeTab !== 'resume' && activeTab !== 'multimodel' && activeTab !== 'linkedin' && (
         <div className="report-view">
           <div className="report-header">
             <h2>{reportData.title}</h2>
@@ -520,6 +547,59 @@ function App() {
           <div className="report-section">
             <h3>Conclusion</h3>
             <p>{reportData.final_summary.conclusion}</p>
+          </div>
+        </div>
+      )}
+
+      {reportData && activeTab === 'linkedin' && (
+        <div className="report-view">
+          <div className="report-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <h2 style={{ marginBottom: 0 }}>LinkedIn Profile Analysis</h2>
+            <div className="ats-score-badge">
+              <span className="score-label">Profile Score</span>
+              <span className={`score-value ${reportData.score >= 80 ? 'high' : reportData.score >= 60 ? 'medium' : 'low'}`}>
+                {reportData.score}/100
+              </span>
+            </div>
+          </div>
+          
+          <div className="report-section highlight">
+            <h3>Improved Headline</h3>
+            <p><strong>{reportData.improved_headline}</strong></p>
+          </div>
+
+          <div className="report-section">
+            <h3>Improved About Section</h3>
+            <p style={{ whiteSpace: 'pre-wrap' }}>{reportData.improved_about}</p>
+          </div>
+
+          <div className="report-grid">
+            <div className="report-card">
+              <h3>Verified Strengths</h3>
+              <div className="tags">
+                {reportData.strengths && reportData.strengths.map((strength, i) => (
+                  <span key={i} className="tag">{strength}</span>
+                ))}
+              </div>
+            </div>
+            
+            <div className="report-card">
+              <h3>Weaknesses</h3>
+              <div className="tags">
+                {reportData.weaknesses && reportData.weaknesses.map((weakness, i) => (
+                  <span key={i} className="tag error-tag">{weakness}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="report-section">
+            <h3>Actionable Suggestions</h3>
+            <ul className="suggestions-list">
+              {reportData.suggestions && reportData.suggestions.map((suggestion, i) => (
+                <li key={i}>{suggestion}</li>
+              ))}
+            </ul>
           </div>
         </div>
       )}

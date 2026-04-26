@@ -7,6 +7,7 @@ from app.routes.document_summarizer import router as document_summarizer_router
 from app.routes.youtube_report import router as youtube_report_router
 from app.routes.resume_analyzer import router as resume_analyzer_router
 from app.routes.multimodel import router as multimodel_router
+from app.routes.linkedin_analyzer import router as linkedin_analyzer_router
 
 app = FastAPI(
     title="AI Automation Hub",
@@ -30,6 +31,7 @@ app.include_router(document_summarizer_router)
 app.include_router(youtube_report_router)
 app.include_router(resume_analyzer_router)
 app.include_router(multimodel_router)
+app.include_router(linkedin_analyzer_router)
 
 @app.get("/")
 def read_root():

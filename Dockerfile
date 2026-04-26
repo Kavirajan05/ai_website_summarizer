@@ -18,5 +18,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Let Railway pass the PORT environment variable
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
+# Set up the entrypoint script to parse Railway's custom commands
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+# Let Railway pass the PORT environment variable natively
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

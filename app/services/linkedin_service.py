@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-import google.generativeai as genai
+from groq import Groq
 from app.config.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -18,89 +18,125 @@ def fetch_profile_text(url: str) -> str:
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
-    try:
-        service = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=options)
-        driver.get(url)
-        time.sleep(5) # wait for page to load
+    logger.info(f"Starting selenium fetch for {url}")
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=options)
+    driver.get(url)
+    time.sleep(5)
 
-        body = driver.find_element(By.TAG_NAME, "body").text
-        driver.quit()
-        return body[:8000]
-    except Exception as e:
-        logger.error(f"Selenium fetch failed: {e}")
-        raise ValueError(f"Failed to fetch LinkedIn profile: {str(e)}")
+    body = driver.find_element(By.TAG_NAME, "body").text
+    driver.quit()
+    return body[:8000]
 
-def _fallback_response():
+def _keyword_present(text, keywords):
+    lowered = text.lower()
+    return any(keyword in lowered for keyword in keywords)
+
+def _offline_response(profile_text):
+    text = profile_text or ""
+    strengths = []
+    weaknesses = []
+    suggestions = []
+
+    if _keyword_present(text, ["python", "java", "javascript", "react", "fastapi", "django", "flask"]):
+        strengths.append("Clear technical stack mentioned")
+    if _keyword_present(text, ["engineer", "developer", "analyst", "manager", "consultant"]):
+        strengths.append("Role identity is visible")
+    if re.search(r"\b\d+%\b|\b\d+\b", text):
+        strengths.append("Contains measurable details")
+    if _keyword_present(text, ["lead", "led", "built", "improved", "designed", "delivered"]):
+        strengths.append("Shows action-oriented language")
+
+    if not strengths:
+        strengths.append("Profile has room for stronger positioning")
+
+    if not re.search(r"\b\d+%\b|\b\d+\b", text):
+        weaknesses.append("No quantified achievements found")
+        suggestions.append("Add 2-3 metrics such as growth, speed, revenue, or scale")
+    if len(text.split()) < 120:
+        weaknesses.append("Profile text is too short to build trust quickly")
+        suggestions.append("Expand the about section with role, impact, and proof")
+    if not _keyword_present(text, ["python", "java", "javascript", "react", "fastapi", "django", "flask", "sql"]):
+        weaknesses.append("Missing clear keyword signals for recruiters")
+        suggestions.append("Repeat your target role keywords naturally in headline and about")
+    if not _keyword_present(text, ["lead", "built", "delivered", "improved", "designed", "optimized"]):
+        weaknesses.append("Not enough impact-focused language")
+        suggestions.append("Start bullet points with strong verbs and outcomes")
+
+    if not weaknesses:
+        weaknesses.append("Profile would benefit from tighter positioning")
+    if not suggestions:
+        suggestions.extend([
+            "Tighten the headline around one target role",
+            "Add one proof point per job or project",
+        ])
+
     return {
-        "score": 70,
-        "strengths": ["Clear professional background visible"],
-        "weaknesses": ["Detailed AI analysis could not be completed"],
-        "suggestions": ["Add more measurable achievements", "Optimize keywords for your target role"],
-        "improved_headline": "Professional | Experienced Specialist",
-        "improved_about": "Experienced professional focused on delivering measurable impact and driving continuous improvement in fast-paced environments.",
+        "score": 78 if len(strengths) >= 2 else 68,
+        "strengths": strengths[:4],
+        "weaknesses": weaknesses[:4],
+        "suggestions": suggestions[:4],
+        "improved_headline": "Software Engineer | Python | FastAPI | Backend",
+        "improved_about": "I build practical backend systems, automate repetitive work, and focus on measurable outcomes using Python and modern web tools.",
     }
 
 async def analyze_linkedin_profile(url: str) -> dict:
-    if not settings.gemini_api_key:
-        logger.warning("GEMINI_API_KEY is not set.")
-        return _fallback_response()
+    # 1. Fetch text (let errors bubble up so frontend can see if Selenium fails!)
+    profile_text = fetch_profile_text(url)
 
-    try:
-        # Fetch text
-        profile_text = fetch_profile_text(url)
-        
-        if len(profile_text.strip()) < 50:
-            raise ValueError("Profile text is too short or could not be scraped.")
-            
-        # Analyze with Gemini
-        genai.configure(api_key=settings.gemini_api_key)
-        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-        
-        model_name = "gemini-1.5-flash"
-        if "models/gemini-1.5-flash" in available_models:
-            model_name = "models/gemini-1.5-flash"
-        elif any("flash" in m for m in available_models):
-            model_name = next(m for m in available_models if "flash" in m)
-        elif available_models:
-            model_name = available_models[0]
-            
-        model = genai.GenerativeModel(model_name)
-        
-        prompt = f"""
-You are an expert LinkedIn profile reviewer and recruiter.
-Analyze the following LinkedIn profile text and provide constructive feedback.
+    if not profile_text.strip():
+        raise ValueError("Could not extract any text from the LinkedIn profile page.")
 
-Return your analysis STRICTLY as a valid JSON object matching exactly this structure:
+    # 2. Analyze using Groq (Original Workflow)
+    if not settings.groq_api_key:
+        logger.warning("GROQ_API_KEY is not set. Falling back to offline text analysis.")
+        return _offline_response(profile_text)
+
+    prompt = f"""
+You are a LinkedIn expert.
+
+Analyze the profile and return STRICT JSON:
+
 {{
- "score": <an integer out of 100 representing profile strength>,
- "strengths": ["strength 1", "strength 2", "strength 3"],
- "weaknesses": ["weakness 1", "weakness 2", "weakness 3"],
- "suggestions": ["actionable suggestion 1", "actionable suggestion 2"],
- "improved_headline": "<a rewritten, high-impact headline>",
- "improved_about": "<a rewritten, engaging about section (3-4 sentences)>"
+ "score": number,
+ "strengths": [],
+ "weaknesses": [],
+ "suggestions": [],
+ "improved_headline": "",
+ "improved_about": ""
 }}
 
-Profile Text:
+Profile:
 {profile_text}
 """
+
+    client = Groq(api_key=settings.groq_api_key)
+    
+    try:
+        # We need to run the synchronous Groq client in an executor
+        import asyncio
+        loop = asyncio.get_event_loop()
         
-        response = model.generate_content(
-            prompt,
-            generation_config={"response_mime_type": "application/json"}
-        )
-        
-        text = response.text.strip()
-        text = re.sub(r"```(?:json)?", "", text).strip()
-        
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError:
-            match = re.search(r"\{.*\}", text, re.DOTALL)
-            if match:
-                return json.loads(match.group())
-            return _fallback_response()
+        def _call_groq():
+            return client.chat.completions.create(
+                model="llama3-70b-8192",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.3,
+            )
             
+        response = await loop.run_in_executor(None, _call_groq)
+        content = response.choices[0].message.content or "{}"
     except Exception as e:
-        logger.error(f"LinkedIn analysis failed: {e}")
-        return _fallback_response()
+        logger.error(f"Groq API error: {e}")
+        return _offline_response(profile_text)
+
+    cleaned = content.strip()
+    if cleaned.startswith("```"):
+        cleaned = cleaned.strip("`")
+        cleaned = cleaned.replace("json", "", 1).strip()
+
+    try:
+        return json.loads(cleaned)
+    except Exception as e:
+        logger.error(f"JSON Parsing error: {e}")
+        return _offline_response(profile_text)

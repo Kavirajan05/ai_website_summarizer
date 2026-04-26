@@ -80,11 +80,11 @@ def generate_marketing_image(input_image_bytes: bytes, product_title: str, produ
         )
         
         # Step 3: Run image-to-image generation
-        # We pass bytes directly to HF client
+        # We use Stable Diffusion XL which supports image-to-image
         generated_image = hf_client.image_to_image(
             input_image_bytes,
             prompt=marketing_prompt,
-            model="black-forest-labs/FLUX.1-dev",
+            model="stabilityai/stable-diffusion-xl-base-1.0",
             strength=0.4,
             guidance_scale=7.5
         )

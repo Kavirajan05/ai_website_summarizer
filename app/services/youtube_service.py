@@ -1,8 +1,12 @@
 import re
 import os
+import logging
+import httpx
 import yt_dlp
 from groq import Groq
 from youtube_transcript_api import YouTubeTranscriptApi
+
+logger = logging.getLogger(__name__)
 
 def get_video_id(url: str) -> str:
     patterns = [
@@ -32,7 +36,19 @@ def fetch_youtube_transcript(url: str) -> str:
                 data = next(iter(ts)).fetch()
         return " ".join([i['text'] for i in data])
     except Exception as e:
-        print(f"Standard API Blocked: {str(e)}. Switching to Groq Whisper...")
+        logger.warning(f"Standard API Blocked: {str(e)}. Trying Jina AI Reader...")
+        try:
+            import httpx
+            # Jina AI Reader is great at bypassing bot detection for transcripts
+            jina_url = f"https://r.jina.ai/{url}"
+            with httpx.Client(timeout=30.0) as client:
+                response = client.get(jina_url)
+                if response.status_code == 200:
+                    text = response.text
+                    # Extract transcript part if possible, or just send the whole page to AI
+                    return text[:15000] # AI can handle the noise
+        except Exception as je:
+            logger.error(f"Jina AI also failed: {je}")
         
         # STEP 2: FAILOVER - Use Groq Whisper (Speech-to-Text)
         return fetch_transcript_via_groq(url)

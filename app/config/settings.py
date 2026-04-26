@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     google_places_api_key: str = ""
     email_api_key: str = ""
     youtube_api_key: str = ""
+    hf_token: str = ""
     smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 587
     smtp_user: str = ""

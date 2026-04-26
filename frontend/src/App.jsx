@@ -11,7 +11,10 @@ function App() {
   const [resumeFile, setResumeFile] = useState(null)
   const [query, setQuery] = useState('')
   const [linkedinUrl, setLinkedinUrl] = useState('')
-  const [activeTab, setActiveTab] = useState('website') // 'website', 'youtube', 'document', 'yt-report', 'services', 'resume', 'multimodel', or 'linkedin'
+  const [adTitle, setAdTitle] = useState('')
+  const [adDescription, setAdDescription] = useState('')
+  const [adImage, setAdImage] = useState(null)
+  const [activeTab, setActiveTab] = useState('website') // 'website', 'youtube', 'document', 'yt-report', 'services', 'resume', 'multimodel', 'linkedin', or 'ad-generator'
   const [loading, setLoading] = useState(false)
   const [reportData, setReportData] = useState(null)
   const [status, setStatus] = useState(null)
@@ -65,6 +68,13 @@ function App() {
       endpoint = 'analyze-linkedin'
       headers = { 'Content-Type': 'application/json' }
       body = JSON.stringify({ url: linkedinUrl })
+    } else if (activeTab === 'ad-generator') {
+      endpoint = 'generate-ad'
+      const formData = new FormData()
+      formData.append('title', adTitle)
+      formData.append('description', adDescription)
+      formData.append('image', adImage)
+      body = formData
     }
 
     try {
@@ -85,7 +95,8 @@ function App() {
                    activeTab === 'yt-report' ? 'YouTube report generated!' : 
                    activeTab === 'resume' ? 'Resume analyzed successfully!' : 
                    activeTab === 'multimodel' ? 'Multi-model summary generated!' : 
-                   activeTab === 'linkedin' ? 'LinkedIn profile analyzed!' : 'Summary generated successfully!',
+                   activeTab === 'linkedin' ? 'LinkedIn profile analyzed!' : 
+                   activeTab === 'ad-generator' ? 'Marketing ad generated!' : 'Summary generated successfully!',
         })
       } else {
         const errorMessage = result.detail 
@@ -111,6 +122,7 @@ function App() {
     if (activeTab === 'resume') return 'AI-powered ATS scoring and resume analysis.'
     if (activeTab === 'multimodel') return 'Query multiple LLMs (Qwen, LLaMA, Gemini) simultaneously.'
     if (activeTab === 'linkedin') return 'Analyze LinkedIn profiles to get tailored improvement suggestions.'
+    if (activeTab === 'ad-generator') return 'Generate professional marketing ads from product images.'
     return 'Find and analyze the best local service providers.'
   }
 
@@ -169,6 +181,12 @@ function App() {
           onClick={() => { setActiveTab('linkedin'); setReportData(null); setStatus(null); }}
         >
           🔗 LinkedIn
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'ad-generator' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('ad-generator'); setReportData(null); setStatus(null); }}
+        >
+          🎨 Ad Generator
         </button>
       </div>
 
@@ -239,17 +257,46 @@ function App() {
             />
           </div>
         ) : activeTab === 'linkedin' ? (
-          <div className="input-group">
-            <label htmlFor="linkedinUrl">LinkedIn Profile URL</label>
-            <input
-              id="linkedinUrl"
-              type="url"
-              placeholder="https://linkedin.com/in/username"
-              value={linkedinUrl}
-              onChange={(e) => setLinkedinUrl(e.target.value)}
-              required
             />
           </div>
+        ) : activeTab === 'ad-generator' ? (
+          <>
+            <div className="input-group">
+              <label htmlFor="adTitle">Product Title</label>
+              <input
+                id="adTitle"
+                type="text"
+                placeholder="e.g. Premium Leather Watch"
+                value={adTitle}
+                onChange={(e) => setAdTitle(e.target.value)}
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label htmlFor="adDescription">Marketing Description</label>
+              <textarea
+                id="adDescription"
+                placeholder="e.g. Handcrafted from top-grain Italian leather with a sapphire glass face..."
+                value={adDescription}
+                onChange={(e) => setAdDescription(e.target.value)}
+                required
+                rows={3}
+                style={{ width: '100%', background: 'rgba(0, 0, 0, 0.2)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '0.8rem 1rem', color: 'white', fontSize: '1rem', outline: 'none', resize: 'vertical' }}
+              />
+            </div>
+            <div className="input-group">
+              <label htmlFor="adImage">Product Photo</label>
+              <div className="file-upload-wrapper">
+                <input
+                  id="adImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setAdImage(e.target.files[0])}
+                  required
+                />
+              </div>
+            </div>
+          </>
         ) : (
           <>
             <div className="input-group">
@@ -277,7 +324,7 @@ function App() {
           </>
         )}
 
-        {activeTab !== 'document' && activeTab !== 'yt-report' && activeTab !== 'resume' && activeTab !== 'multimodel' && activeTab !== 'linkedin' && (
+        {activeTab !== 'document' && activeTab !== 'yt-report' && activeTab !== 'resume' && activeTab !== 'multimodel' && activeTab !== 'linkedin' && activeTab !== 'ad-generator' && (
           <div className="input-group">
             <label htmlFor="email">Your Email {activeTab === 'services' ? '(optional)' : '(for results)'}</label>
             <input
@@ -301,7 +348,8 @@ function App() {
                activeTab === 'yt-report' ? 'Generating Report...' : 
                activeTab === 'resume' ? 'Analyzing Resume...' : 
                activeTab === 'multimodel' ? 'Querying Models...' : 
-               activeTab === 'linkedin' ? 'Analyzing Profile...' : 'Searching Services...'}
+               activeTab === 'linkedin' ? 'Analyzing Profile...' : 
+               activeTab === 'ad-generator' ? 'Generating Ad...' : 'Searching Services...'}
             </>
           ) : (
             activeTab === 'website' ? 'Summarize Website' : 
@@ -310,7 +358,8 @@ function App() {
             activeTab === 'yt-report' ? 'Generate YT Report' : 
             activeTab === 'resume' ? 'Analyze Resume' : 
             activeTab === 'multimodel' ? 'Ask Multimodel AI' : 
-            activeTab === 'linkedin' ? 'Analyze Profile' : 'Find Best Services'
+            activeTab === 'linkedin' ? 'Analyze Profile' : 
+            activeTab === 'ad-generator' ? 'Generate Marketing Ad' : 'Find Best Services'
           )}
         </button>
       </form>
@@ -352,7 +401,7 @@ function App() {
         </div>
       )}
 
-      {reportData && activeTab !== 'services' && activeTab !== 'yt-report' && activeTab !== 'resume' && activeTab !== 'multimodel' && activeTab !== 'linkedin' && (
+      {reportData && activeTab !== 'services' && activeTab !== 'yt-report' && activeTab !== 'resume' && activeTab !== 'multimodel' && activeTab !== 'linkedin' && activeTab !== 'ad-generator' && (
         <div className="report-view">
           <div className="report-header">
             <h2>{reportData.title}</h2>
@@ -600,6 +649,28 @@ function App() {
                 <li key={i}>{suggestion}</li>
               ))}
             </ul>
+          </div>
+        </div>
+      )}
+
+      {reportData && activeTab === 'ad-generator' && (
+        <div className="report-view">
+          <div className="report-header">
+            <h2>Marketing Ad: {reportData.title}</h2>
+          </div>
+          
+          <div className="report-section highlight" style={{ textAlign: 'center' }}>
+            <h3>Generated Image</h3>
+            <div className="ad-image-container" style={{ margin: '1.5rem auto', maxWidth: '600px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
+              <img src={reportData.image} alt={reportData.title} style={{ width: '100%', height: 'auto', display: 'block' }} />
+            </div>
+            <p className="reasoning">This image was professionally enhanced for marketing purposes using AI photography techniques.</p>
+          </div>
+
+          <div className="report-footer" style={{ display: 'flex', justifyContent: 'center' }}>
+            <a href={reportData.image} download={`${reportData.title.replace(/ /g, '_')}_ad.png`} className="submit-btn" style={{ textDecoration: 'none', width: 'auto', padding: '0.8rem 2rem' }}>
+              📥 Download Ad Image
+            </a>
           </div>
         </div>
       )}

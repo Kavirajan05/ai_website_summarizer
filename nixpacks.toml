@@ -1,26 +1,11 @@
 [phases.setup]
-nixPkgs = [
-    "python311",
-    "chromium",
-    "chromedriver",
-    "glib",
-    "nss",
-    "fontconfig",
-    "freetype",
-    "libX11",
-    "libXcomposite",
-    "libXdamage",
-    "libXext",
-    "libXfixes",
-    "libXrandr",
-    "libgbm",
-    "pango",
-    "at-spi2-atk",
-    "cups"
-]
+nixPkgs = ["python311", "glib", "nss", "fontconfig", "freetype"]
 
 [phases.build]
-cmds = ["pip install -r requirements.txt"]
+cmds = [
+    "pip install -r requirements.txt",
+    "playwright install --with-deps chromium"
+]
 
 [start]
 cmd = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"

@@ -1,114 +1,63 @@
 import os
 import json
 import logging
-import re
-import time
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+import asyncio
+from playwright.async_api import async_playwright
 from groq import Groq
 from app.config.settings import settings
 
 logger = logging.getLogger(__name__)
 
-def fetch_profile_text(url: str) -> str:
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless=new")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--window-size=1920,1080")
-    options.add_argument('--ignore-certificate-errors')
-    options.add_argument('--allow-running-insecure-content')
-    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
-
-    logger.info(f"Starting selenium fetch for {url}")
+async def fetch_profile_text(url: str) -> str:
+    """Scrapes a LinkedIn profile using Playwright."""
+    logger.info(f"Starting Playwright fetch for {url}")
     
     try:
-        import shutil
-        chromedriver_path = shutil.which("chromedriver") or "/usr/bin/chromedriver"
-        chromium_path = shutil.which("chromium") or "/usr/bin/chromium"
-        
-        if os.path.exists(chromedriver_path):
-            # Running on Nixpacks/Linux
-            logger.info(f"Using Linux chromedriver: {chromedriver_path}")
-            service = Service(chromedriver_path)
+        async with async_playwright() as p:
+            # Launch browser
+            browser = await p.chromium.launch(headless=True)
+            page = await browser.new_page(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+            )
             
-            if os.path.exists(chromium_path):
-                options.binary_location = chromium_path
-                logger.info(f"Using Linux chromium: {chromium_path}")
-                
-            driver = webdriver.Chrome(service=service, options=options)
-        else:
-            # Local fallback (Windows/Mac)
-            logger.info("Using ChromeDriverManager for local environment")
-            service = Service(ChromeDriverManager().install())
-            driver = webdriver.Chrome(service=service, options=options)
+            # Navigate to URL
+            await page.goto(url, wait_until="networkidle", timeout=60000)
+            
+            # Wait for content to load
+            await asyncio.sleep(5)
+            
+            # Extract body text
+            content = await page.inner_text("body")
+            await browser.close()
+            
+            return content[:8000]
             
     except Exception as e:
-        error_msg = str(e)
-        if "127" in error_msg:
-            raise ValueError("Railway Deployment Error: Chromium dependencies are missing. Please ensure Railway has fully rebuilt the project using the latest nixpacks.toml file.")
-        raise ValueError(f"Could not initialize Chrome. System error: {error_msg}")
-
-    driver.get(url)
-    time.sleep(5)
-
-    body = driver.find_element(By.TAG_NAME, "body").text
-    driver.quit()
-    return body[:8000]
-
-def _keyword_present(text, keywords):
-    lowered = text.lower()
-    return any(keyword in lowered for keyword in keywords)
+        logger.error(f"Playwright error: {str(e)}")
+        if "executable doesn't exist" in str(e).lower():
+            raise ValueError("Railway Deployment Error: Chromium is still installing. Please wait for the build to finish or use 'Paste Profile Text'.")
+        raise ValueError(f"Could not scrape LinkedIn. Error: {str(e)}")
 
 def _offline_response(profile_text):
-    text = profile_text or ""
-    strengths = []
-    weaknesses = []
-    suggestions = []
-
-    if _keyword_present(text, ["python", "java", "javascript", "react", "fastapi", "django", "flask"]):
-        strengths.append("Clear technical stack mentioned")
-    if _keyword_present(text, ["engineer", "developer", "analyst", "manager", "consultant"]):
-        strengths.append("Role identity is visible")
-    if re.search(r"\b\d+%\b|\b\d+\b", text):
-        strengths.append("Contains measurable details")
-    if _keyword_present(text, ["lead", "led", "built", "improved", "designed", "delivered"]):
-        strengths.append("Shows action-oriented language")
-
-    if not strengths:
-        strengths.append("Profile has room for stronger positioning")
-
-    if not re.search(r"\b\d+%\b|\b\d+\b", text):
-        weaknesses.append("No quantified achievements found")
-        suggestions.append("Add 2-3 metrics such as growth, speed, revenue, or scale")
-    if len(text.split()) < 120:
-        weaknesses.append("Profile text is too short to build trust quickly")
-        suggestions.append("Expand the about section with role, impact, and proof")
-    if not _keyword_present(text, ["python", "java", "javascript", "react", "fastapi", "django", "flask", "sql"]):
-        weaknesses.append("Missing clear keyword signals for recruiters")
-        suggestions.append("Repeat your target role keywords naturally in headline and about")
-    if not _keyword_present(text, ["lead", "built", "delivered", "improved", "designed", "optimized"]):
-        weaknesses.append("Not enough impact-focused language")
-        suggestions.append("Start bullet points with strong verbs and outcomes")
-
-    if not weaknesses:
-        weaknesses.append("Profile would benefit from tighter positioning")
-    if not suggestions:
-        suggestions.extend([
-            "Tighten the headline around one target role",
-            "Add one proof point per job or project",
-        ])
-
+    """Fallback offline analysis if Groq fails."""
+    # Simple keyword-based scoring
+    text = (profile_text or "").lower()
+    score = 70
+    strengths = ["Visible professional history"]
+    weaknesses = ["Could use more quantified results"]
+    suggestions = ["Add specific metrics to your bullet points"]
+    
+    if "python" in text or "fastapi" in text:
+        strengths.append("Strong technical keywords detected")
+        score += 5
+        
     return {
-        "score": 78 if len(strengths) >= 2 else 68,
-        "strengths": strengths[:4],
-        "weaknesses": weaknesses[:4],
-        "suggestions": suggestions[:4],
-        "improved_headline": "Software Engineer | Python | FastAPI | Backend",
-        "improved_about": "I build practical backend systems, automate repetitive work, and focus on measurable outcomes using Python and modern web tools.",
+        "score": min(score, 100),
+        "strengths": strengths,
+        "weaknesses": weaknesses,
+        "suggestions": suggestions,
+        "improved_headline": "Professional in their field",
+        "improved_about": "Experienced professional focused on delivering high-quality results."
     }
 
 async def analyze_linkedin_profile(url: str = None, manual_text: str = None) -> dict:
@@ -119,61 +68,31 @@ async def analyze_linkedin_profile(url: str = None, manual_text: str = None) -> 
     else:
         if not url:
             raise ValueError("URL is required if manual text is not provided.")
-        profile_text = fetch_profile_text(url)
+        profile_text = await fetch_profile_text(url)
 
-    if not profile_text.strip():
-        raise ValueError("Could not extract any text from the LinkedIn profile page.")
+    if not profile_text or not profile_text.strip():
+        raise ValueError("Could not extract any text from the LinkedIn profile.")
 
-    # 2. Analyze using Groq (Original Workflow)
+    # 2. Analyze using Groq
     if not settings.groq_api_key:
-        logger.warning("GROQ_API_KEY is not set. Falling back to offline text analysis.")
         return _offline_response(profile_text)
 
     prompt = f"""
-You are a LinkedIn expert.
-
-Analyze the profile and return STRICT JSON:
-
-{{
- "score": number,
- "strengths": [],
- "weaknesses": [],
- "suggestions": [],
- "improved_headline": "",
- "improved_about": ""
-}}
-
-Profile:
-{profile_text}
-"""
-
-    client = Groq(api_key=settings.groq_api_key)
+    Analyze this LinkedIn profile and return STRICT JSON with score (0-100), strengths (list), weaknesses (list), suggestions (list), improved_headline, and improved_about.
     
-    try:
-        # We need to run the synchronous Groq client in an executor
-        import asyncio
-        loop = asyncio.get_event_loop()
-        
-        def _call_groq():
-            return client.chat.completions.create(
-                model="llama3-70b-8192",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.3,
-            )
-            
-        response = await loop.run_in_executor(None, _call_groq)
-        content = response.choices[0].message.content or "{}"
-    except Exception as e:
-        logger.error(f"Groq API error: {e}")
-        return _offline_response(profile_text)
-
-    cleaned = content.strip()
-    if cleaned.startswith("```"):
-        cleaned = cleaned.strip("`")
-        cleaned = cleaned.replace("json", "", 1).strip()
+    Profile Text:
+    {profile_text}
+    """
 
     try:
-        return json.loads(cleaned)
+        client = Groq(api_key=settings.groq_api_key)
+        response = client.chat.completions.create(
+            model="llama3-70b-8192",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+            response_format={"type": "json_object"}
+        )
+        return json.loads(response.choices[0].message.content)
     except Exception as e:
-        logger.error(f"JSON Parsing error: {e}")
+        logger.error(f"Analysis error: {e}")
         return _offline_response(profile_text)

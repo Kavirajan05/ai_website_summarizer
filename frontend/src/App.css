@@ -163,6 +163,25 @@
   border: 1px solid var(--glass-border);
 }
 
+.analysis-card h3 {
+  color: #a78bfa;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.analysis-card p, .analysis-card li {
+  color: #e2e8f0 !important;
+  line-height: 1.6;
+}
+
+.improved-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #ffffff !important;
+}
+
 .report-section h3 {
   color: var(--primary);
   margin-bottom: 0.8rem;

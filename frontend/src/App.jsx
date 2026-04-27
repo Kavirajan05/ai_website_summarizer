@@ -263,46 +263,18 @@ function App() {
           </div>
         ) : activeTab === 'linkedin' ? (
           <div className="linkedin-container">
-            <div className="mode-toggle">
-              <button 
-                className={!manualMode ? "active" : ""} 
-                onClick={() => setManualMode(false)}
-              >
-                Auto-Scrape URL
-              </button>
-              <button 
-                className={manualMode ? "active" : ""} 
-                onClick={() => setManualMode(true)}
-              >
-                Paste Profile Text
-              </button>
+            <div className="input-group">
+              <label htmlFor="profileText">Paste LinkedIn Profile Text Here</label>
+              <p className="input-hint">Copy the 'About' and 'Experience' sections from LinkedIn and paste them below for a deep AI analysis.</p>
+              <textarea
+                id="profileText"
+                placeholder="Paste profile content here..."
+                value={profileText}
+                onChange={(e) => setProfileText(e.target.value)}
+                rows={12}
+                required
+              />
             </div>
-            
-            {!manualMode ? (
-              <div className="input-group">
-                <label htmlFor="linkedinUrl">LinkedIn Profile URL</label>
-                <input
-                  id="linkedinUrl"
-                  type="url"
-                  placeholder="https://linkedin.com/in/username"
-                  value={linkedinUrl}
-                  onChange={(e) => setLinkedinUrl(e.target.value)}
-                  required
-                />
-              </div>
-            ) : (
-              <div className="input-group">
-                <label htmlFor="profileText">Paste LinkedIn Profile Text Here</label>
-                <textarea
-                  id="profileText"
-                  placeholder="Copy and paste the 'About' section or the entire profile text here..."
-                  value={profileText}
-                  onChange={(e) => setProfileText(e.target.value)}
-                  rows={8}
-                  required
-                />
-              </div>
-            )}
           </div>
         ) : activeTab === 'ad-generator' ? (
           <>

@@ -1,8 +1,28 @@
 [phases.setup]
-nixPkgs = ["python311", "playwright-driver.browsers"]
+nixPkgs = [
+    "python311",
+    "glib",
+    "nss",
+    "fontconfig",
+    "freetype",
+    "libX11",
+    "libXcomposite",
+    "libXdamage",
+    "libXext",
+    "libXfixes",
+    "libXrandr",
+    "libgbm",
+    "pango",
+    "at-spi2-atk",
+    "cups",
+    "playwright-driver"
+]
 
 [phases.build]
-cmds = ["pip install -r requirements.txt"]
+cmds = [
+    "pip install -r requirements.txt",
+    "playwright install --with-deps chromium"
+]
 
 [start]
-cmd = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+cmd = "LD_LIBRARY_PATH=/usr/lib:/usr/local/lib:/nix/store/$(ls /nix/store | grep glib | head -n 1)/lib:$LD_LIBRARY_PATH uvicorn app.main:app --host 0.0.0.0 --port $PORT"

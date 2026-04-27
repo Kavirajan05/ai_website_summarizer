@@ -1,4 +1,7 @@
 import os
+# Force Playwright to use the Nix-provided browser path
+os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/nix/store"
+
 import json
 import logging
 import asyncio

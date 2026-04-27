@@ -31,10 +31,14 @@ async def analyze_linkedin_profile(url: str = None, profile_text: str = None) ->
     """
 
     try:
-        # Use the working process_with_ai function that all other services use
-        response_text = await process_with_ai(prompt)
+        # Standard processor is synchronous in this project
+        response_text = process_with_ai(prompt)
         
-        # Parse JSON from response
+        # If the processor returns a dict already (some versions do), use it
+        if isinstance(response_text, dict):
+            return response_text
+            
+        # Parse JSON from response string
         if "```json" in response_text:
             response_text = response_text.split("```json")[1].split("```")[0].strip()
         elif "```" in response_text:
@@ -48,8 +52,8 @@ async def analyze_linkedin_profile(url: str = None, profile_text: str = None) ->
         return {
             "score": 60,
             "strengths": ["Professional background visible"],
-            "weaknesses": [f"AI Error: {str(e)[:50]}..."],
-            "suggestions": ["Ensure your AI service is running correctly"],
+            "weaknesses": [f"AI Process Error: {str(e)[:50]}"],
+            "suggestions": ["Please try again with more detailed profile text"],
             "improved_headline": "Professional in their field",
             "improved_about": "Experienced professional."
         }

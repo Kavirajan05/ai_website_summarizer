@@ -402,7 +402,8 @@ function App() {
             activeTab === 'resume' ? 'Analyze Resume' : 
             activeTab === 'multimodel' ? 'Ask Multimodel AI' : 
             activeTab === 'linkedin' ? 'Analyze Profile' : 
-            activeTab === 'ad-generator' ? 'Generate Marketing Ad' : 'Find Best Services'
+            activeTab === 'ad-generator' ? 'Generate Marketing Ad' : 
+            activeTab === 'mcq-generator' ? 'Generate MCQs' : 'Find Best Services'
           )}
         </button>
       </form>
@@ -444,7 +445,7 @@ function App() {
         </div>
       )}
 
-      {reportData && activeTab !== 'services' && activeTab !== 'yt-report' && activeTab !== 'resume' && activeTab !== 'multimodel' && activeTab !== 'linkedin' && activeTab !== 'ad-generator' && (
+      {reportData && activeTab !== 'services' && activeTab !== 'yt-report' && activeTab !== 'resume' && activeTab !== 'multimodel' && activeTab !== 'linkedin' && activeTab !== 'ad-generator' && activeTab !== 'mcq-generator' && (
         <div className="report-view">
           <div className="report-header">
             <h2>{reportData.title}</h2>

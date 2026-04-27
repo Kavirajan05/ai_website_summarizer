@@ -1,5 +1,7 @@
 import os
 os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/app/pw-browsers"
+# Force library path for Nixpacks/Railway
+os.environ["LD_LIBRARY_PATH"] = "/usr/lib:/usr/local/lib:" + os.environ.get("LD_LIBRARY_PATH", "")
 
 import json
 import logging

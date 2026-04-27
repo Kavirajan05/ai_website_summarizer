@@ -7,13 +7,13 @@ from app.config.settings import settings
 logger = logging.getLogger(__name__)
 
 async def analyze_linkedin_profile(url: str = None, profile_text: str = None) -> dict:
-    """Analyzes LinkedIn profile text with simplified keys for UI compatibility."""
+    """Analyzes LinkedIn profile text with dual AI fallback (Gemini -> Groq)."""
     text_to_analyze = profile_text
     
     if not text_to_analyze or not text_to_analyze.strip():
         raise ValueError("Please paste the LinkedIn profile text to analyze.")
 
-    logger.info("Starting LinkedIn analysis with UI-Sync keys")
+    logger.info("Starting LinkedIn analysis with updated Multi-AI fallback")
 
     prompt = f"""
     Analyze the following LinkedIn profile text. 
@@ -31,10 +31,11 @@ async def analyze_linkedin_profile(url: str = None, profile_text: str = None) ->
     {text_to_analyze}
     """
 
+    # 1. Try Gemini first
     try:
         response_text = process_with_ai(prompt)
         
-        # Check for quota
+        # Check for quota error in response
         if isinstance(response_text, str) and ("429" in response_text or "quota" in response_text.lower()):
             raise Exception("Gemini Quota Exceeded")
             
@@ -43,22 +44,29 @@ async def analyze_linkedin_profile(url: str = None, profile_text: str = None) ->
             
         return _normalize_keys(_parse_json(response_text))
         
-    except Exception as e:
-        logger.warning(f"Primary AI failed: {e}. Trying Groq fallback...")
-        if settings.groq_api_key:
-            try:
-                client = Groq(api_key=settings.groq_api_key)
-                response = client.chat.completions.create(
-                    model="llama3-70b-8192",
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.3,
-                    response_format={"type": "json_object"}
-                )
-                return _normalize_keys(json.loads(response.choices[0].message.content))
-            except Exception as ge:
-                logger.error(f"Fallback failed: {ge}")
+    except Exception as gemini_err:
+        logger.warning(f"Gemini failed: {gemini_err}. Trying Groq (llama-3.3) fallback...")
         
-        return _static_fallback()
+        # 2. Try Groq with the LATEST models
+        if settings.groq_api_key:
+            # Try versatile model first, then instant as backup
+            groq_models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
+            
+            for model_name in groq_models:
+                try:
+                    client = Groq(api_key=settings.groq_api_key)
+                    response = client.chat.completions.create(
+                        model=model_name,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=0.3,
+                        response_format={"type": "json_object"}
+                    )
+                    return _normalize_keys(json.loads(response.choices[0].message.content))
+                except Exception as model_err:
+                    logger.error(f"Groq model {model_name} failed: {model_err}")
+                    continue
+        
+        return _static_fallback(f"AI error: {str(gemini_err)[:30]}")
 
 def _normalize_keys(data):
     """Ensures keys match what the React UI expects."""
@@ -78,12 +86,12 @@ def _parse_json(text):
         text = text.split("```")[1].split("```")[0].strip()
     return json.loads(text)
 
-def _static_fallback():
+def _static_fallback(error_msg):
     return {
         "score": 60,
         "improved_headline": "Professional in their field",
         "improved_about": "Experienced professional focused on growth.",
         "strengths": ["Background in industry"],
-        "weaknesses": ["AI currently overloaded"],
-        "suggestions": ["Try again in 5 minutes"]
+        "weaknesses": [f"AI Error: {error_msg}"],
+        "suggestions": ["Please verify your Groq API key is valid"]
     }

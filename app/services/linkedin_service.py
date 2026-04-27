@@ -36,34 +36,43 @@ async def analyze_linkedin_profile(url: str = None, profile_text: str = None) ->
     {text_to_analyze}
     """
 
-    try:
-        # Use flash-latest for better reliability
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
-        
-        # Disable safety filters to prevent blocking professional profiles
-        safety_settings = [
-            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-        ]
-        
-        response = model.generate_content(
-            prompt,
-            safety_settings=safety_settings,
-            generation_config={"response_mime_type": "application/json"}
-        )
-        
-        return json.loads(response.text)
-        
-    except Exception as e:
-        logger.error(f"Gemini Deep Analysis failed: {str(e)}")
-        # Fallback response
-        return {
-            "score": 60,
-            "strengths": ["Professional background visible"],
-            "weaknesses": [f"AI Connection Error: {str(e)[:50]}..."],
-            "suggestions": ["Ensure your Gemini API key is valid in Railway settings"],
-            "improved_headline": "Professional in their field",
-            "improved_about": "Experienced professional."
-        }
+    # Try these models in order
+    model_names = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+    last_error = ""
+
+    for model_name in model_names:
+        try:
+            logger.info(f"Attempting analysis with model: {model_name}")
+            model = genai.GenerativeModel(model_name)
+            
+            # Disable safety filters
+            safety_settings = [
+                {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+            ]
+            
+            response = model.generate_content(
+                prompt,
+                safety_settings=safety_settings,
+                generation_config={"response_mime_type": "application/json"}
+            )
+            
+            return json.loads(response.text)
+            
+        except Exception as e:
+            last_error = str(e)
+            logger.warning(f"Model {model_name} failed: {last_error}")
+            continue # Try next model
+
+    # If all models fail
+    logger.error(f"All Gemini models failed. Last error: {last_error}")
+    return {
+        "score": 60,
+        "strengths": ["Professional background visible"],
+        "weaknesses": [f"AI Error: {last_error[:50]}..."],
+        "suggestions": ["Check if your Gemini API key has access to these models"],
+        "improved_headline": "Professional in their field",
+        "improved_about": "Experienced professional."
+    }

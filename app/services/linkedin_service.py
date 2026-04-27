@@ -10,12 +10,12 @@ logger = logging.getLogger(__name__)
 if settings.gemini_api_key:
     genai.configure(api_key=settings.gemini_api_key)
 
-async def analyze_linkedin_profile(url: str = None, manual_text: str = None) -> dict:
+async def analyze_linkedin_profile(url: str = None, profile_text: str = None) -> dict:
     """Analyzes LinkedIn profile text using Gemini."""
-    # Use manual text as primary input
-    profile_text = manual_text
+    # Use profile_text as input
+    text_to_analyze = profile_text
     
-    if not profile_text or not profile_text.strip():
+    if not text_to_analyze or not text_to_analyze.strip():
         raise ValueError("Please paste the LinkedIn profile text to analyze.")
 
     logger.info("Starting Gemini analysis for LinkedIn profile text")
@@ -34,7 +34,7 @@ async def analyze_linkedin_profile(url: str = None, manual_text: str = None) -> 
     }}
 
     Profile Text:
-    {profile_text}
+    {text_to_analyze}
     """
 
     try:
@@ -52,7 +52,6 @@ async def analyze_linkedin_profile(url: str = None, manual_text: str = None) -> 
         
     except Exception as e:
         logger.error(f"Gemini Analysis error: {e}")
-        # Fallback response
         return {
             "score": 60,
             "strengths": ["Professional background visible"],

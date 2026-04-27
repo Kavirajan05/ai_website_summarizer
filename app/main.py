@@ -9,6 +9,7 @@ from app.routes.resume_analyzer import router as resume_analyzer_router
 from app.routes.multimodel import router as multimodel_router
 from app.routes.linkedin_analyzer import router as linkedin_analyzer_router
 from app.routes.ad_generator import router as ad_generator_router
+from app.routes.mcq_generator import router as mcq_generator_router
 
 app = FastAPI(
     title="AI Automation Hub",
@@ -34,6 +35,7 @@ app.include_router(resume_analyzer_router)
 app.include_router(multimodel_router)
 app.include_router(linkedin_analyzer_router)
 app.include_router(ad_generator_router)
+app.include_router(mcq_generator_router)
 
 @app.get("/")
 def read_root():

@@ -16,7 +16,8 @@ function App() {
   const [adTitle, setAdTitle] = useState('')
   const [adDescription, setAdDescription] = useState('')
   const [adImage, setAdImage] = useState(null)
-  const [activeTab, setActiveTab] = useState('website') // 'website', 'youtube', 'document', 'yt-report', 'services', 'resume', 'multimodel', 'linkedin', or 'ad-generator'
+  const [mcqFile, setMcqFile] = useState(null)
+  const [activeTab, setActiveTab] = useState('website') // 'website', 'youtube', 'document', 'yt-report', 'services', 'resume', 'multimodel', 'linkedin', 'ad-generator', or 'mcq-generator'
   const [loading, setLoading] = useState(false)
   const [reportData, setReportData] = useState(null)
   const [status, setStatus] = useState(null)
@@ -79,6 +80,11 @@ function App() {
       formData.append('description', adDescription)
       formData.append('image', adImage)
       body = formData
+    } else if (activeTab === 'mcq-generator') {
+      endpoint = 'generate-mcqs'
+      const formData = new FormData()
+      formData.append('file', mcqFile)
+      body = formData
     }
 
     try {
@@ -100,7 +106,8 @@ function App() {
                    activeTab === 'resume' ? 'Resume analyzed successfully!' : 
                    activeTab === 'multimodel' ? 'Multi-model summary generated!' : 
                    activeTab === 'linkedin' ? 'LinkedIn profile analyzed!' : 
-                   activeTab === 'ad-generator' ? 'Marketing ad generated!' : 'Summary generated successfully!',
+                   activeTab === 'ad-generator' ? 'Marketing ad generated!' : 
+                   activeTab === 'mcq-generator' ? 'MCQs generated successfully!' : 'Summary generated successfully!',
         })
       } else {
         const errorMessage = result.detail 
@@ -127,6 +134,7 @@ function App() {
     if (activeTab === 'multimodel') return 'Query multiple LLMs (Qwen, LLaMA, Gemini) simultaneously.'
     if (activeTab === 'linkedin') return 'Analyze LinkedIn profiles to get tailored improvement suggestions.'
     if (activeTab === 'ad-generator') return 'Generate professional marketing ads from product images.'
+    if (activeTab === 'mcq-generator') return 'Upload a document to generate instant MCQs and test your knowledge.'
     return 'Find and analyze the best local service providers.'
   }
 
@@ -191,6 +199,12 @@ function App() {
           onClick={() => { setActiveTab('ad-generator'); setReportData(null); setStatus(null); }}
         >
           🎨 Ad Generator
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'mcq-generator' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('mcq-generator'); setReportData(null); setStatus(null); }}
+        >
+          📝 MCQ Gen
         </button>
       </div>
 
@@ -313,6 +327,19 @@ function App() {
               </div>
             </div>
           </>
+        ) : activeTab === 'mcq-generator' ? (
+          <div className="input-group">
+            <label htmlFor="mcqFile">Upload Document (PDF/DOCX/TXT)</label>
+            <div className="file-upload-wrapper">
+              <input
+                id="mcqFile"
+                type="file"
+                accept=".pdf,application/pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.txt"
+                onChange={(e) => setMcqFile(e.target.files[0])}
+                required
+              />
+            </div>
+          </div>
         ) : (
           <>
             <div className="input-group">
@@ -687,6 +714,41 @@ function App() {
             <a href={reportData.image} download={`${reportData.title.replace(/ /g, '_')}_ad.png`} className="submit-btn" style={{ textDecoration: 'none', width: 'auto', padding: '0.8rem 2rem' }}>
               📥 Download Ad Image
             </a>
+          </div>
+        </div>
+      )}
+
+      {reportData && activeTab === 'mcq-generator' && (
+        <div className="report-view">
+          <div className="report-header">
+            <h2>Knowledge Test: {reportData.title}</h2>
+          </div>
+          
+          <div className="mcq-list">
+            {reportData.questions && reportData.questions.map((q, i) => (
+              <div key={i} className="report-card full-width mcq-card" style={{ marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                  <span className="q-number" style={{ background: 'var(--primary)', color: 'white', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 'bold' }}>{i + 1}</span>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ marginTop: 0, color: 'white', fontSize: '1.1rem' }}>{q.question}</h3>
+                    <div className="options-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.8rem', marginTop: '1rem' }}>
+                      {Object.entries(q.options).map(([key, value]) => (
+                        <div key={key} className={`option-item ${q.answer === key ? 'correct-hint' : ''}`} style={{ padding: '0.8rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                          <strong>{key}:</strong> {value}
+                        </div>
+                      ))}
+                    </div>
+                    <details style={{ marginTop: '1.2rem', cursor: 'pointer' }}>
+                      <summary style={{ color: 'var(--primary)', fontWeight: '500' }}>Show Correct Answer & Explanation</summary>
+                      <div style={{ marginTop: '0.8rem', padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', borderLeft: '4px solid #10b981', borderRadius: '4px' }}>
+                        <p style={{ margin: 0 }}><strong>Correct Answer: {q.answer}</strong></p>
+                        <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', opacity: 0.9 }}>{q.explanation}</p>
+                      </div>
+                    </details>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

@@ -1,35 +1,62 @@
 import os
-# Force Playwright to use the Nix-provided browser path
-os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/nix/store"
-
 import json
 import logging
 import asyncio
+import glob
 from playwright.async_api import async_playwright
 from groq import Groq
 from app.config.settings import settings
 
 logger = logging.getLogger(__name__)
 
+def find_nix_chromium():
+    """Finds the chromium binary in the Nix store by searching for it."""
+    # Look for the headless shell in the nix store
+    nix_path = "/nix/store/*/bin/chrome-headless-shell"
+    matches = glob.glob(nix_path)
+    if matches:
+        logger.info(f"Found Nix Chromium at: {matches[0]}")
+        return matches[0]
+    
+    # Also check for standard chromium
+    nix_path_alt = "/nix/store/*/bin/chromium"
+    matches_alt = glob.glob(nix_path_alt)
+    if matches_alt:
+        logger.info(f"Found Nix Chromium (alt) at: {matches_alt[0]}")
+        return matches_alt[0]
+        
+    return None
+
 async def fetch_profile_text(url: str) -> str:
-    """Scrapes a LinkedIn profile using Playwright."""
-    logger.info(f"Starting Playwright fetch for {url}")
+    """Scrapes a LinkedIn profile using Playwright with Smart Finder."""
+    logger.info(f"Starting Smart Playwright fetch for {url}")
     
     try:
         async with async_playwright() as p:
-            # Launch browser (Standard launch for playwright-driver)
-            browser = await p.chromium.launch(headless=True)
+            # Smart Finder: Try to find the nix-installed browser first
+            executable_path = find_nix_chromium()
+            
+            if executable_path:
+                browser = await p.chromium.launch(executable_path=executable_path, headless=True)
+            else:
+                # Fallback to standard launch (and self-healing if needed)
+                try:
+                    browser = await p.chromium.launch(headless=True)
+                except Exception as le:
+                    if "executable doesn't exist" in str(le).lower():
+                        logger.info("Browser missing! Running emergency installation...")
+                        import subprocess
+                        subprocess.run(["playwright", "install", "chromium"], check=True)
+                        browser = await p.chromium.launch(headless=True)
+                    else:
+                        raise le
+
             page = await browser.new_page(
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
             )
             
-            # Navigate to URL
             await page.goto(url, wait_until="networkidle", timeout=60000)
-            
-            # Wait for content to load
             await asyncio.sleep(5)
-            
-            # Extract body text
             content = await page.inner_text("body")
             await browser.close()
             
@@ -40,8 +67,7 @@ async def fetch_profile_text(url: str) -> str:
         raise ValueError(f"Could not scrape LinkedIn. Error: {str(e)}")
 
 def _offline_response(profile_text):
-    """Fallback offline analysis if Groq fails."""
-    text = (profile_text or "").lower()
+    """Fallback offline analysis."""
     return {
         "score": 75,
         "strengths": ["Visible professional history"],

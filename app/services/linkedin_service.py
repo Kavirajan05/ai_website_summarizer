@@ -16,8 +16,18 @@ async def fetch_profile_text(url: str) -> str:
     
     try:
         async with async_playwright() as p:
-            # Launch browser (Path is controlled by env var in nixpacks.toml)
-            browser = await p.chromium.launch(headless=True)
+            # Self-healing: Try to launch, if it fails because of missing browser, install it
+            try:
+                browser = await p.chromium.launch(headless=True)
+            except Exception as le:
+                if "executable doesn't exist" in str(le).lower():
+                    logger.info("Browser missing! Running emergency installation...")
+                    import subprocess
+                    subprocess.run(["playwright", "install", "chromium"], check=True)
+                    browser = await p.chromium.launch(headless=True)
+                else:
+                    raise le
+            
             page = await browser.new_page(
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
             )

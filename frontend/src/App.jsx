@@ -70,8 +70,7 @@ function App() {
       endpoint = 'analyze-linkedin'
       headers = { 'Content-Type': 'application/json' }
       body = JSON.stringify({ 
-        url: manualMode ? "" : linkedinUrl,
-        profile_text: manualMode ? profileText : ""
+        profile_text: profileText 
       })
     } else if (activeTab === 'ad-generator') {
       endpoint = 'generate-ad'

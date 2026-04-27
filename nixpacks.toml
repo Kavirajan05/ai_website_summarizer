@@ -1,5 +1,21 @@
 [phases.setup]
-nixPkgs = ["python311", "glib", "nss", "fontconfig", "freetype"]
+nixPkgs = [
+    "python311",
+    "glib",
+    "nss",
+    "fontconfig",
+    "freetype",
+    "libX11",
+    "libXcomposite",
+    "libXdamage",
+    "libXext",
+    "libXfixes",
+    "libXrandr",
+    "libgbm",
+    "pango",
+    "at-spi2-atk",
+    "cups"
+]
 
 [phases.build]
 cmds = [
@@ -8,4 +24,4 @@ cmds = [
 ]
 
 [start]
-cmd = "PLAYWRIGHT_BROWSERS_PATH=/app/pw-browsers uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+cmd = "LD_LIBRARY_PATH=/usr/lib:/usr/local/lib:$LD_LIBRARY_PATH PLAYWRIGHT_BROWSERS_PATH=/app/pw-browsers uvicorn app.main:app --host 0.0.0.0 --port $PORT"

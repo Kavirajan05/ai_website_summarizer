@@ -11,14 +11,13 @@ if settings.gemini_api_key:
     genai.configure(api_key=settings.gemini_api_key)
 
 async def analyze_linkedin_profile(url: str = None, profile_text: str = None) -> dict:
-    """Analyzes LinkedIn profile text using Gemini."""
-    # Use profile_text as input
+    """Analyzes LinkedIn profile text using Gemini with safety filters disabled."""
     text_to_analyze = profile_text
     
     if not text_to_analyze or not text_to_analyze.strip():
         raise ValueError("Please paste the LinkedIn profile text to analyze.")
 
-    logger.info("Starting Gemini analysis for LinkedIn profile text")
+    logger.info("Starting Deep Gemini analysis for LinkedIn profile")
 
     prompt = f"""
     You are an expert LinkedIn Profile Optimizer. Analyze the following profile text and provide a detailed optimization report.
@@ -38,25 +37,33 @@ async def analyze_linkedin_profile(url: str = None, profile_text: str = None) ->
     """
 
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(prompt)
+        # Use flash-latest for better reliability
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
         
-        # Parse JSON from response
-        text = response.text
-        if "```json" in text:
-            text = text.split("```json")[1].split("```")[0].strip()
-        elif "```" in text:
-            text = text.split("```")[1].split("```")[0].strip()
-            
-        return json.loads(text)
+        # Disable safety filters to prevent blocking professional profiles
+        safety_settings = [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+        ]
+        
+        response = model.generate_content(
+            prompt,
+            safety_settings=safety_settings,
+            generation_config={"response_mime_type": "application/json"}
+        )
+        
+        return json.loads(response.text)
         
     except Exception as e:
-        logger.error(f"Gemini Analysis error: {e}")
+        logger.error(f"Gemini Deep Analysis failed: {str(e)}")
+        # Fallback response
         return {
             "score": 60,
             "strengths": ["Professional background visible"],
-            "weaknesses": ["Analysis failed or text too short"],
-            "suggestions": ["Please try again with more detailed profile text"],
+            "weaknesses": [f"AI Connection Error: {str(e)[:50]}..."],
+            "suggestions": ["Ensure your Gemini API key is valid in Railway settings"],
             "improved_headline": "Professional in their field",
             "improved_about": "Experienced professional."
         }
